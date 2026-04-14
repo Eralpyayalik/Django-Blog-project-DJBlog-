@@ -1,0 +1,52 @@
+{% extends "layout.html" %}
+{% load crispy_forms_tags %}
+
+{% block body %}
+<div class="container">
+    <div class="row min-vh-100 align-items-center justify-content-center" style="margin-top: -50px;">
+        <div class="col-md-5 col-lg-4">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="card-body p-5">
+                    
+                    <div class="text-center mb-4">
+                        <div class="bg-danger bg-opacity-10 d-inline-block p-3 rounded-circle mb-3">
+                            <i class="fas fa-user-shield fa-2x text-danger"></i>
+                        </div>
+                        <h3 class="fw-bold text-dark">Hoş Geldin</h3>
+                        <p class="text-muted small">Hesabına erişmek için bilgilerini gir.</p>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3 custom-form">
+                            {{ form|crispy }}
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-danger btn-lg rounded-pill fw-bold shadow-sm py-2" style="transition: 0.3s;">
+                                <i class="fas fa-sign-in-alt me-2"></i>Giriş Yap
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="text-center mt-4">
+                        <p class="small text-muted mb-0">Henüz bir hesabın yok mu?</p>
+                        <a href="{% url 'user:register' %}" class="text-danger fw-bold text-decoration-none small">Hemen Kayıt Ol</a>
+                    </div>
+
+                </div>
+            </div>
+            
+            <div class="text-center mt-4">
+                <a href="{% url 'index' %}" class="text-muted text-decoration-none small">
+                    <i class="fas fa-arrow-left me-1"></i> Ana Sayfaya Dön
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+{% endblock body %}

@@ -1,0 +1,49 @@
+{% extends "layout.html" %}
+{% load crispy_forms_tags %} {% block body %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0 p-4 mb-5">
+                <div class="d-flex align-items-center mb-4 border-bottom pb-2">
+                    <i class="fas fa-user-edit text-primary fs-3 me-3"></i>
+                    <h3 class="fw-bold mb-0">Profil Ayarları</h3>
+                </div>
+
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <h5 class="text-secondary border-start border-primary border-4 ps-2 mb-3">Temel Bilgiler</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">{{ u_form.first_name|as_crispy_field }}</div>
+                        <div class="col-md-6">{{ u_form.last_name|as_crispy_field }}</div>
+                        <div class="col-12">{{ u_form.email|as_crispy_field }}</div>
+                    </div>
+
+                    <h5 class="text-secondary border-start border-danger border-4 ps-2 mb-3">Profil ve Sosyal Medya</h5>
+                    <div class="row g-3">
+                        <div class="col-12">{{ p_form.image|as_crispy_field }}</div>
+                        <div class="col-12">{{ p_form.bio|as_crispy_field }}</div>
+                        <div class="col-md-6">
+                            <label class="form-label"><i class="fab fa-github me-1"></i> GitHub URL</label>
+                            {{ p_form.github|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label"><i class="fab fa-linkedin me-1"></i> LinkedIn URL</label>
+                            {{ p_form.linkedin|as_crispy_field }}
+                        </div>
+                    </div>
+
+                    <div class="mt-4 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary px-5 py-2 fw-bold rounded-pill shadow-sm">
+                            Değişiklikleri Kaydet
+                        </button>
+                        <a href="{% url 'user:profile_edit' %}" class="btn btn-outline-secondary px-4 py-2 rounded-pill">
+                            İptal
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock body %}

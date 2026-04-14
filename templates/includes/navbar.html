@@ -1,0 +1,96 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm py-3">
+  <div class="container px-lg-5">
+    <a class="navbar-brand fw-bold fs-4" href="/">
+      <span class="text-danger">Dj</span>Blog
+    </a>
+    
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link px-3" href="/">Anasayfa</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link px-3" href="/articles">Makaleler</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link px-3" href="{% url 'about' %}">Hakkımda</a>
+        </li>
+      </ul>
+
+      <div class="d-flex align-items-center">
+        <ul class="navbar-nav align-items-center">
+          {% if request.user.is_authenticated %}
+            <li class="nav-item d-none d-lg-block me-2">
+                <span class="badge rounded-pill shadow-sm py-2 px-3" 
+                      style="background-color: {{ request.user.profile.rank_info.color }}22; 
+                             color: {{ request.user.profile.rank_info.color }}; 
+                             border: 1px solid {{ request.user.profile.rank_info.color }}; 
+                             font-size: 0.75rem;">
+                    <i class="fas {{ request.user.profile.rank_info.icon }}"></i>
+                    {{ request.user.profile.rank_info.title }}
+                </span>
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link px-3 text-light opacity-75" href="/articles/dashboard/">
+                <i class="fas fa-columns me-1"></i> Dashboard
+              </a>
+            </li>
+            {% if request.user.is_authenticated %}
+            <li class="nav-item me-3">
+                <a class="nav-link d-flex align-items-center p-0 px-2" href="{% url 'user:profile' username=request.user.username %}">
+                    <img src="{{ request.user.profile.image.url }}" 
+                        class="rounded-circle border border-secondary shadow-sm" 
+                        style="width: 35px; height: 35px; object-fit: cover;">
+                    <span class="ms-2 d-none d-xl-inline text-light small fw-bold">{{ request.user.username }}</span>
+                </a>
+            </li>
+            {% endif %}
+            <li class="nav-item">
+              <a class="btn btn-outline-danger btn-sm px-4 rounded-pill fw-bold" href="/user/logout/">
+                Çıkış
+              </a>
+            </li>
+          {% else %}
+            <li class="nav-item">
+              <a class="nav-link px-3" href="/user/login/">Giriş Yap</a>
+            </li>
+            <li class="nav-item ms-lg-2">
+              <a class="btn btn-danger btn-sm px-4 rounded-pill shadow-sm" href="/user/register/">
+                Kayıt Ol
+              </a>
+            </li>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<style>
+  .navbar {
+    backdrop-filter: blur(10px);
+    background-color: rgba(33, 37, 41, 0.95) !important;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .nav-link {
+    transition: all 0.3s ease;
+    font-weight: 500;
+  }
+  .nav-link:hover {
+    color: #dc3545 !important;
+  }
+  /* Profil resmine hover efekti */
+  .nav-link img:hover {
+    border-color: #dc3545 !important;
+    transform: scale(1.1);
+    transition: 0.3s;
+  }
+  .navbar-brand span {
+    letter-spacing: 1px;
+  }
+</style>

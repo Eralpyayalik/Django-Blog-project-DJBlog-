@@ -1,0 +1,51 @@
+
+.avatar-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px; /* Hafif karemsi modern durur */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    /* İsim uzunluğuna göre rengi döndüren matematiksel hile */
+    background-color: hsl(calc(var(--char-count) * 40), 65%, 50%);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+.transition-hover {
+    transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+}
+.transition-hover:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.12) !important;
+}
+.bg-primary-soft {
+    background-color: #e7f1ff;
+    color: #0d6efd;
+}
+.article-item {
+    transition: all 0.4s ease;
+}
+.category-btn {
+    border: none;
+    border-left: 4px solid transparent;
+    margin-bottom: 2px;
+}
+.category-btn.active {
+    background-color: #f8f9fa !important;
+    color: #000 !important;
+    border-left: 4px solid #212529 !important;
+    font-weight: bold;
+}
+
+    .fw-bolder { font-weight: 800 !important; }
+    .ls-tight { letter-spacing: -1px; }
+    .post-header-premium {
+        background: radial-gradient(circle at top right, rgba(13, 110, 253, 0.03), transparent),
+                    radial-gradient(circle at top left, rgba(25, 135, 84, 0.03), transparent);
+    }
+    .stat-item {
+        transition: transform 0.2s;
+        cursor: default;
+    }
+    .stat-item:hover { transform: translateY(-2px); }

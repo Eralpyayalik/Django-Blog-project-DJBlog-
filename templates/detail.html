@@ -1,0 +1,279 @@
+{% extends "layout.html" %}
+{% load static %} 
+{% load article_extras %} 
+
+{% block body %}
+<link rel="stylesheet" href="{% static 'css/test.css' %}">
+
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        
+        <div class="post-header-premium mb-5 py-5 text-center bg-white border-bottom shadow-sm rounded-4">
+            <div class="container">
+                {% if article.category %}
+                <div class="mb-2">
+                    <span class="text-uppercase fw-bold text-muted opacity-75" style="letter-spacing: 2px; font-size: 0.7rem;">
+                        <i class="fas fa-tag me-1"></i> {{ article.category }}
+                    </span>
+                </div>
+                {% endif %}
+
+                <h1 class="display-3 fw-bolder text-dark mb-4 ls-tight" style="line-height: 1.1;">
+                    {{ article.title }}
+                </h1>
+
+                <div class="d-inline-flex flex-wrap align-items-center justify-content-center gap-4 p-2 px-4 bg-light rounded-pill border shadow-sm">
+                    <div class="d-flex align-items-center me-2">
+                        {% if article.author.profile.image %}
+                            <img src="{{ article.author.profile.image.url }}" 
+                                class="rounded-circle border border-2 border-white shadow-sm me-2" 
+                                style="width: 35px; height: 35px; min-width: 35px; min-height: 35px; object-fit: cover;">
+                        {% else %}
+                            <div class="bg-light text-muted rounded-circle d-flex align-items-center justify-content-center me-2" 
+                                style="width: 35px; height: 35px; min-width: 35px; min-height: 35px; border: 1px solid #eee;">
+                                <i class="fas fa-user" style="font-size: 0.8rem;"></i>
+                            </div>
+                        {% endif %}
+                        <span class="fw-bold text-dark small">{{ article.author.username }}</span>
+                    </div>
+
+                    <div class="vr d-none d-md-block" style="height: 20px; opacity: 0.1;"></div>
+
+                    <div class="d-flex align-items-center gap-3 small text-muted">
+                        <span><i class="far fa-calendar-alt me-1"></i> {{ article.created_date|date:"d M Y" }}</span>
+                        <span class="d-inline-flex align-items-center mx-2 text-dark" style="font-size: 0.85rem;">
+                            <i class="far fa-clock text-primary me-2 fs-6"></i> 
+                            <span class="fw-bold me-1">{{ article.content|read_time }} dk</span> 
+                            <span class="text-muted small">okuma süresi</span>
+                        </span>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-3 border-start ps-3 ms-1">
+                        <div class="stat-item" title="Görüntülenme">
+                            <i class="fas fa-eye text-success me-1"></i>
+                            <span class="fw-bold">{{ article.read_count }}</span>
+                        </div>
+                        <div class="stat-item" title="Beğeni">
+                            <i class="fas fa-heart text-danger me-1"></i>
+                            <span id="like-count" class="fw-bold">{{ article.likes.count }}</span>
+                        </div>
+                        <div class="stat-item" title="Yorumlar">
+                            <i class="fas fa-comments text-info me-1"></i>
+                            <strong class="text-dark">{{ article.comments.count }}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if article.article_image %}
+            <img src="{{ article.article_image.url }}" 
+                class="img-fluid rounded mb-4 shadow-sm" 
+                style="width: 100%; height: auto; display: block;" 
+                alt="{{ article.title }}">
+        {% endif %}
+
+        <div class="article-body shadow-none p-2 mb-5">
+            <div class="content-text lh-lg text-secondary" style="font-size: 1.15rem; letter-spacing: 0.3px;">
+                {{ article.content|safe }}
+            </div>
+        </div>
+
+        <div class="d-flex mt-5 mb-5 border-top pt-4">
+            <div class="like-section">
+                {% if request.user.is_authenticated %}
+                    <button id="like-btn" 
+                            data-article-id="{{ article.id}}" 
+                            type="button"
+                            class="btn {% if request.user in article.likes.all %}btn-danger{% else %}btn-outline-danger{% endif %} rounded-pill shadow-sm px-4 py-2 border-2">
+                        <i id="like-icon" class="{% if request.user in article.likes.all %}fas{% else %}far{% endif %} fa-heart me-1"></i>
+                        <span id="like-text" style="font-size: 0.9rem;" class="fw-bold">
+                            {% if request.user in article.likes.all %}Beğenildi{% else %}Beğen{% endif %}
+                        </span>
+                    </button>
+                {% else %}
+                    <a href="{% url 'user:login' %}" class="btn btn-outline-secondary rounded-pill shadow-sm px-4 py-2 border-2">
+                        <i class="far fa-heart me-1"></i> 
+                        <span style="font-size: 0.9rem;" class="fw-bold">Beğenmek için giriş yap</span>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="mt-5 pt-4 border-top d-flex justify-content-between align-items-center">
+            <a href="{% url 'article:dashboard' %}" class="btn btn-dark btn-sm rounded-pill px-4">
+                ← Dashboard'a Dön
+            </a>
+        </div>
+
+        <div class="container mt-5 px-0">
+            <section class="mb-5">
+                <h4 class="fw-bold mb-4"><i class="fas fa-pen-nib me-2"></i>Bir Yorum Bırak</h4>
+                <div class="card border-0 shadow-sm bg-light">
+                    <div class="card-body p-4">
+                        <form id="comment-form" method="post" action="{% url 'article:comment' article.id %}">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="comment_author" class="form-label fw-bold">Yorum Yapan</label>
+                                {% if request.user.is_authenticated %}
+                                    <input name="comment_author" type="text" class="form-control border-0 shadow-sm bg-light" 
+                                        id="comment_author" value="{{ request.user.username }}" readonly>
+                                    <small class="text-success"><i class="fas fa-check-circle"></i> {{ request.user.username }} olarak oturum açtın.</small>
+                                {% else %}
+                                    <input name="comment_author" type="text" class="form-control border-0 shadow-sm" 
+                                        id="comment_author" placeholder="Adınız soyadınız..." required>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="comment_content" class="form-label fw-bold">Yorumunuz</label>
+                                <textarea name="comment_content" class="form-control border-0 shadow-sm" id="comment_content" rows="3" placeholder="Düşüncelerini paylaş..." required></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-danger px-4 rounded-pill fw-bold">
+                                <i class="fas fa-paper-plane me-2"></i>Gönder
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <hr class="my-5">
+
+            <section class="mb-5">
+                <h4 class="fw-bold mb-4">
+                    <i class="fas fa-comments me-2"></i>Yorumlar 
+                    <span class="badge bg-secondary rounded-pill ms-2" style="font-size: 0.9rem;">{{ comments|length }}</span>
+                </h4>
+
+                {% if comments %}
+                <div id="comment-list">
+                    {% for comment in comments %}
+                    <div class="card border-0 shadow-sm mb-4 rounded-4 overflow-hidden">
+                        <div class="card-body p-4 {% if comment.comment_author == article.author.username %}border-start border-danger border-4{% endif %}">
+                            <div class="d-flex align-items-start mb-3">
+                                <div class="flex-shrink-0 me-3 d-flex flex-column align-items-center" style="width: 85px;"> 
+                                    <div class="mb-2">
+                                        {% if comment.user %}
+                                            <a href="{% url 'user:profile' username=comment.user.username %}" class="text-decoration-none">
+                                                {% if comment.user.profile.image %}
+                                                    <img src="{{ comment.user.profile.image.url }}" 
+                                                        class="rounded-circle border border-2 border-primary border-opacity-10 shadow-sm" 
+                                                        style="width: 50px; height: 50px; min-width: 50px; min-height: 50px; object-fit: cover;">
+                                                {% else %}
+                                                    <div class="avatar-circle avatar-{{ comment.comment_author|first|lower }} d-flex align-items-center justify-content-center shadow-sm" 
+                                                        style="width: 50px; height: 50px; min-width: 50px; min-height: 50px;">
+                                                        {{ comment.comment_author|first|upper }}
+                                                    </div>
+                                                {% endif %}
+                                            </a>
+                                        {% else %}
+                                            <div class="avatar-circle bg-secondary d-flex align-items-center justify-content-center shadow-sm text-white" 
+                                                style="width: 50px; height: 50px; min-width: 50px; min-height: 50px; border-radius: 50%;">
+                                                {{ comment.comment_author|first|upper }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+
+                                    {% if comment.user.profile %}
+                                        <div class="text-center w-100" style="line-height: 1.1;">
+                                            <span class="d-block fw-bold" style="font-size: 0.62rem; color: {{ comment.user.profile.rank_info.color }}; white-space: nowrap;">
+                                                <i class="fas {{ comment.user.profile.rank_info.icon }} me-1"></i>
+                                                {{ comment.user.profile.rank_info.title|upper }}
+                                            </span>
+                                            <small class="text-muted d-block mt-1" style="font-size: 0.55rem; font-weight: 600;">
+                                                {{ comment.user.profile.total_xp }} XP
+                                            </small>
+                                        </div>
+                                    {% else %}
+                                        <span class="badge bg-light text-dark border w-100" style="font-size: 0.55rem;">MİSAFİR</span>
+                                    {% endif %}
+                                </div>
+
+                                <div class="w-100">
+                                    <div class="d-flex flex-wrap align-items-center justify-content-between mb-2">
+                                        <div class="d-flex flex-wrap align-items-center gap-2">
+                                            <div class="mb-1">
+                                                {% if comment.user %}
+                                                    <a href="{% url 'user:profile' username=comment.user.username %}" class="text-decoration-none">
+                                                        <span class="fw-bold text-dark fs-6">{{ comment.comment_author }}</span>
+                                                    </a>
+                                                {% else %}
+                                                    <span class="fw-bold text-dark fs-6">{{ comment.comment_author }}</span>
+                                                {% endif %}
+                                            </div>
+
+                                            <div class="comment-badges d-flex gap-1 flex-wrap align-items-center">
+                                                {% if request.user.is_authenticated and comment.comment_author == request.user.username %}
+                                                    <span class="badge rounded-pill px-2 py-1 shadow-sm text-white" style="background-color: #6c5ce7; font-size: 0.65rem;">
+                                                        <i class="fas fa-user-circle me-1"></i> SEN
+                                                    </span>
+                                                {% endif %}
+
+                                                {% if comment.comment_author == article.author.username %}
+                                                    <span class="badge bg-danger rounded-pill px-2 py-1 shadow-sm" style="font-size: 0.65rem;">
+                                                        <i class="fas fa-pen-nib me-1"></i> YAZAR
+                                                    </span>
+                                                {% endif %}
+
+                                                {% if comment.user %}
+                                                    {% if comment.user.is_superuser %}
+                                                        <span class="badge rounded-pill px-3 py-1 shadow-sm" style="background-color: #212529; font-size: 0.65rem; letter-spacing: 0.5px;">
+                                                            <i class="fas fa-crown text-warning me-1"></i> YÖNETİCİ
+                                                        </span>
+                                                    {% elif comment.user.is_staff %}
+                                                        <span class="badge rounded-pill px-3 py-1 shadow-sm" style="background-color: #198754; font-size: 0.65rem; letter-spacing: 0.5px;">
+                                                            <i class="fas fa-shield-alt me-1"></i> MODERATÖR
+                                                        </span>
+                                                    {% else %}
+                                                        <span class="badge bg-primary rounded-pill px-2 py-1 shadow-sm" style="font-size: 0.65rem;">
+                                                            <i class="fas fa-user-check me-1"></i> ÜYE
+                                                        </span>
+                                                    {% endif %}
+                                                {% else %}
+                                                    <span class="badge bg-secondary rounded-pill px-2 py-1 opacity-75" style="font-size: 0.65rem;">
+                                                        <i class="fas fa-ghost me-1"></i> MİSAFİR
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <small class="text-muted fst-italic" style="font-size: 0.75rem;">
+                                            <i class="far fa-clock me-1"></i> {{ comment.comment_date|date:"H:i" }} | {{ comment.comment_date|date:"d M Y" }}
+                                        </small>
+                                    </div>
+                                    <p class="mb-0 text-secondary" style="line-height: 1.6; font-size: 0.95rem;">
+                                        {{ comment.comment_content }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                    <div class="alert alert-light border-0 shadow-sm text-center py-5 rounded-4">
+                        <i class="far fa-comment-dots fa-3x mb-3 d-block opacity-25 text-primary"></i>
+                        <span class="text-muted">Henüz yorum yapılmamış. İlk yorumu sen ateşle!</span>
+                    </div>
+                {% endif %}
+            </section>
+        </div>
+    </div>
+</div>
+
+<style>
+    .content-text p { margin-bottom: 2rem; }
+    #like-btn { transition: transform 0.2s ease, background-color 0.3s ease; }
+    #like-btn:active { transform: scale(0.9); }
+    .comment-badges .badge { height: fit-content; }
+</style>
+{% endblock body %}
+
+{% block scripts %}
+    <script>
+        if (typeof csrftoken === 'undefined') {
+            var csrftoken = "{{ csrf_token }}";
+        }
+    </script>
+    <script src="{% static 'js/filter.js' %}"></script>
+{% endblock scripts %}

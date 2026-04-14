@@ -1,0 +1,88 @@
+{% extends "layout.html" %}
+{% load crispy_forms_tags %}
+{% load article_extras %} 
+{% load static %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-primary text-white p-3">
+                    <h5 class="mb-0"><i class="fas fa-edit me-2"></i> Makaleyi Düzenle</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ form.media }} {{ form|crispy }}
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <a href="/articles/dashboard" class="btn btn-outline-secondary px-4">Vazgeç</a>
+                            <button type="submit" class="btn btn-success px-5 shadow-sm">
+                                <i class="fas fa-save me-2"></i> Değişiklikleri Kaydet
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 sticky-top" style="top: 100px;">
+                <div class="card-body">
+                    <h6 class="text-muted text-uppercase small fw-bold mb-3">Makale Durumu</h6>
+                    
+                    {% if article.article_image %}
+                    <div class="mb-3">
+                        <label class="small text-muted mb-2">Mevcut Kapak Fotoğrafı</label>
+                        <img src="{{ article.article_image.url }}" class="img-fluid rounded border shadow-sm" alt="Kapak">
+                    </div>
+                    {% endif %}
+
+                    <div class="list-group list-group-flush small">
+                        <div class="list-group-item d-flex justify-content-between align-items-center px-0 bg-transparent">
+                            <span><i class="fas fa-eye text-info me-2"></i> Toplam Okunma</span>
+                            <span class="badge bg-info-soft text-info rounded-pill px-3">{{ article.read_count }}</span>
+                        </div>
+
+                        <div class="list-group-item d-flex justify-content-between align-items-center px-0 bg-transparent">
+                            <span><i class="fas fa-heart text-danger me-2"></i> Beğeni Sayısı</span>
+                            <span class="badge bg-danger-soft text-danger rounded-pill px-3">{{ article.likes.count }}</span>
+                        </div>
+
+                        <div class="list-group-item d-flex justify-content-between align-items-center px-0 bg-transparent">
+                            <span><i class="fas fa-clock text-warning me-2"></i> Okuma Süresi</span>
+                            <span id="live-read-time" class="badge bg-warning-soft text-warning rounded-pill px-3">
+                                {{ article.content|read_time }} dk
+                            </span>
+                        </div>
+
+                        <div class="list-group-item d-flex justify-content-between align-items-center px-0 bg-transparent">
+                            <span><i class="fas fa-calendar-alt text-secondary me-2"></i> Oluşturulma</span>
+                            <span class="text-dark fw-bold">{{ article.created_date|date:"d M Y" }}</span>
+                        </div>
+
+                        <div class="list-group-item px-0 bg-transparent border-0">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span><i class="fas fa-link text-primary me-2"></i> URL (Slug)</span>
+                            </div>
+                            <div class="p-2 bg-light rounded border-start border-primary border-3 mt-1">
+                                <code class="text-break text-muted small" style="font-size: 0.75rem;">/{{ article.slug }}</code>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid mt-3">
+                        <a href="/articles/article/{{ article.slug }}" target="_blank" class="btn btn-sm btn-outline-dark">
+                            <i class="fas fa-external-link-alt me-1"></i> Sitede Görüntüle
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock body %}
+{% block scripts %}
+    <script src="{% static 'js/filter.js' %}"></script>
+{% endblock scripts %}

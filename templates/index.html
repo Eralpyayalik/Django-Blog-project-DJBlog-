@@ -1,0 +1,196 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/test.css' %}">
+{% endblock head %}
+
+{% block body %}
+<div class="container-fluid px-lg-5 mb-5">
+    
+    <div class="row g-3 mb-5">
+        <div class="col-lg-8">
+            {% if latest_article %}
+            <div class="card bg-dark text-white border-0 rounded-4 overflow-hidden shadow-lg h-100" style="min-height: 450px;">
+                {% if latest_article.article_image %}
+                    <img src="{{ latest_article.article_image.url }}" class="card-img opacity-50 h-100" style="object-fit: cover;">
+                {% endif %}
+                <div class="card-img-overlay d-flex flex-column justify-content-end p-4">
+                    <span class="badge bg-danger mb-2 w-fit">YENİ</span>
+                    <h2 class="display-5 fw-bold"><a href="{% url 'article:detail' latest_article.slug %}" class="text-white text-decoration-none">{{ latest_article.title }}</a></h2>
+                    <p class="lead d-none d-md-block">{{ latest_article.content|safe|striptags|truncatechars:120 }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-lg-4 d-flex flex-column gap-3">
+            {% for pop in popular_articles|slice:":2" %}
+            <div class="card border-0 rounded-4 shadow-sm flex-fill overflow-hidden text-white" 
+                 style="background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('{{ pop.article_image.url }}'); background-size: cover; background-position: center;">
+                <div class="card-body d-flex flex-column justify-content-center">
+                    <span class="badge bg-primary mb-2 w-fit" style="font-size: 0.6rem;">TREND</span>
+                    <h6 class="fw-bold mb-1"><a href="{% url 'article:detail' pop.slug %}" class="text-white text-decoration-none">{{ pop.title }}</a></h6>
+                    <small class="opacity-75"><i class="fas fa-eye me-1"></i>{{ pop.read_count }} Görüntülenme</small>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="row">
+                <div class="col-lg-2 d-none d-lg-block">
+            <h6 class="fw-bold text-uppercase small text-muted mb-3">
+                <i class="fas fa-trophy me-2 text-warning"></i>Sıralama
+            </h6>
+            <div class="list-group list-group-flush shadow-sm rounded-4 overflow-hidden border bg-white">
+                {% for top_user in top_users %}
+                <a href="{% url 'user:profile' top_user.username %}" class="list-group-item list-group-item-action py-3 border-0">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="position-relative">
+                            {% if top_user.profile.image %}
+                                <img src="{{ top_user.profile.image.url }}" class="rounded-circle me-2 border" style="width: 40px; height: 40px; object-fit: cover;">
+                            {% else %}
+                                <i class="fas fa-user-circle fa-2x text-muted me-2"></i>
+                            {% endif %}
+                            <span class="position-absolute bottom-0 end-0 p-1 bg-success border border-white rounded-circle"></span>
+                        </div>
+                        <div class="overflow-hidden">
+                            <div class="fw-bold small text-dark text-truncate">{{ top_user.username }}</div>
+                            <small class="text-muted" style="font-size: 0.65rem;">{{ top_user.profile.total_xp }} XP</small>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex align-items-center gap-1 mt-1">
+                        <span class="badge w-100 py-1 shadow-sm" style="background-color: {{ top_user.profile.rank_info.color }}; font-size: 0.6rem;">
+                            <i class="fas {{ top_user.profile.rank_info.icon }} me-1"></i>
+                            {{ top_user.profile.rank_info.title }}
+                        </span>
+                    </div>
+                </a>
+                {% if not forloop.last %}<hr class="m-0 opacity-25">{% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <h4 class="fw-bold mb-4 d-flex align-items-center">
+                <i class="fas fa-stream text-danger me-2"></i>Akış
+            </h4>
+            
+            <div id="article-container">
+                {% for article in articles %}
+                    {% if article.id != latest_article.id %}
+                        <div class="article-item {% if forloop.counter > 7 %}d-none{% endif %}">
+                            <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden main-card border-hover">
+                                <div class="row g-0">
+                                    <div class="col-md-4">
+                                        {% if article.article_image %}
+                                            <img src="{{ article.article_image.url }}" class="h-100 w-100" style="object-fit: cover; min-height: 200px;">
+                                        {% else %}
+                                            <div class="bg-dark h-100 d-flex align-items-center justify-content-center">
+                                                <i class="fas fa-image text-white-50 fa-2x"></i>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-8">
+                                        <div class="card-body p-4">
+                                            <div class="d-flex justify-content-between mb-2 small">
+                                                <span class="text-danger fw-bold text-uppercase">{{ article.category.name|default:"Genel" }}</span>
+                                                <span class="text-muted"><i class="far fa-clock me-1"></i>{{ article.created_date|date:"d M" }}</span>
+                                            </div>
+                                            <h4 class="card-title fw-bold mb-3">
+                                                <a href="{% url 'article:detail' article.slug %}" class="text-decoration-none text-dark">{{ article.title }}</a>
+                                            </h4>
+                                            <p class="text-secondary small mb-3">{{ article.content|safe|striptags|truncatechars:130 }}</p>
+                                            
+                                            <div class="d-flex align-items-center justify-content-between">
+                                                <a href="{% url 'user:profile' article.author.username %}" class="text-decoration-none d-flex align-items-center">
+                                                    {% if article.author.profile.image %}
+                                                        <img src="{{ article.author.profile.image.url }}" class="rounded-circle me-2 border" style="width: 30px; height: 30px; object-fit: cover;">
+                                                    {% else %}
+                                                        <i class="fas fa-user-circle fa-lg text-muted me-2"></i>
+                                                    {% endif %}
+                                                    <span class="small fw-bold text-dark">{{ article.author.username }}</span>
+                                                </a>
+                                                <small class="text-muted"><i class="fas fa-eye me-1"></i>{{ article.read_count }}</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            <div class="text-center my-4">
+                <button id="load-more-btn" class="btn btn-outline-danger rounded-pill px-5 fw-bold shadow-sm">
+                    <i class="fas fa-plus me-2"></i>Daha Fazla Göster
+                </button>
+            </div>
+        </div>
+
+        <div class="col-lg-3">
+            <div class="card border-0 bg-dark text-white rounded-4 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3 small">PORTALDA ARA</h6>
+                    <form action="{% url 'article:articles' %}" method="get">
+                        <div class="input-group bg-white rounded-pill p-1">
+                            <input type="text" name="keyword" class="form-control border-0 px-3" placeholder="Donanım, Yazılım...">
+                            <button class="btn btn-danger rounded-pill px-3" type="submit"><i class="fas fa-search"></i></button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-4 border-bottom pb-2 text-uppercase small">En Çok Beğenilenler</h6>
+                    {% for top in top_liked_articles %}
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <span class="h4 fw-bold text-danger opacity-25 m-0">0{{ forloop.counter }}</span>
+                        <div>
+                            <a href="{% url 'article:detail' top.slug %}" class="text-decoration-none text-dark fw-bold small d-block mb-1">{{ top.title }}</a>
+                            <small class="text-muted" style="font-size: 0.7rem;"><i class="fas fa-heart text-danger me-1"></i>{{ top.likes.count|default:"0" }} Beğeni</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="card border-0 shadow-sm rounded-4 bg-white mt-4">
+            <div class="card-body p-4">
+                <h6 class="fw-bold mb-4 border-bottom pb-2 text-uppercase small text-primary">
+                    <i class="fas fa-comments me-2"></i>En Çok Tartışılanlar
+                </h6>
+                
+                {% for top_comm in most_commented_articles %}
+                <div class="d-flex align-items-start gap-3 {% if not forloop.last %}mb-3{% endif %}">
+                    <span class="h5 fw-bold text-primary opacity-25 m-0">#{{ forloop.counter }}</span>
+                    
+                    <div class="overflow-hidden">
+                        <a href="{% url 'article:detail' top_comm.slug %}" class="text-decoration-none text-dark fw-bold small d-block mb-1 text-truncate">
+                            {{ top_comm.title }}
+                        </a>
+                        <div class="d-flex align-items-center justify-content-between">
+                            <small class="text-muted" style="font-size: 0.7rem;">
+                                <i class="far fa-comment-dots me-1"></i>{{ top_comm.comment_count }} Yorum
+                            </small>
+                            {% if top_comm.comment_count > 5 %}
+                                <i class="fas fa-fire-alt text-warning animated-fire" style="font-size: 0.8rem;"></i>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+            
+        </div>
+    </div>
+</div>
+
+{% endblock body %}
+{% block scripts %}
+    <script src="{% static 'js/filter.js' %}"></script>
+{% endblock scripts %}
