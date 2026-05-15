@@ -1,0 +1,149 @@
+/* --- GENEL SİSTEM AYARLARI --- */
+body { background-color: #f8f9fa; font-family: 'Segoe UI', sans-serif; color: #333; }
+.w-fit { width: fit-content; }
+
+/* Avatar Tamirleri (Profil ve Anasayfa için) */
+.author-avatar, .author-circle, .avatar-sm { 
+    width: 40px; height: 40px; border-radius: 50%; overflow: hidden; 
+    display: inline-flex; align-items: center; justify-content: center; background: #eee;
+}
+.author-avatar img, .author-circle img, .avatar-sm img { 
+    width: 100%; height: 100%; object-fit: cover; 
+}
+
+/* --- MAKALE KARTLARI (Kırılmayan Tasarım) --- */
+.main-card {
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    border: 1px solid rgba(0,0,0,0.08) !important;
+    border-radius: 15px !important;
+    overflow: hidden;
+}
+
+.main-card:hover {
+    transform: translateY(-5px);
+    border-color: #dc3545 !important;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}
+
+/* JS Filtreleme ve Animasyon Desteği */
+.article-item {
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+/* Kategori Butonları */
+.category-btn {
+    border: none !important;
+    border-left: 4px solid transparent !important;
+    transition: all 0.2s ease;
+    background: white !important;
+    text-align: left;
+}
+
+.category-btn.active {
+    background-color: #fef2f2 !important; /* Çok hafif kırmızımsı */
+    color: #dc3545 !important;
+    border-left: 4px solid #dc3545 !important;
+    font-weight: bold;
+}
+
+/* Ateş Efekti (Diğer sayfalar için) */
+.animated-fire { animation: flicker 1.5s infinite alternate; }
+@keyframes flicker {
+    0% { transform: scale(1); opacity: 0.8; }
+    100% { transform: scale(1.2); opacity: 1; }
+}
+
+.author-avatar, .avatar-sm, .author-circle {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 50% !important;
+    overflow: hidden !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
+.author-avatar img, .avatar-sm img, .author-circle img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+}
+
+/* --- SADECE MAKALE SAYFASI İÇİN ÖZEL STİLLER --- */
+/* Bu sınıflar anasayfada olmadığı için orayı etkilemez */
+
+.article-page-body .main-card {
+    transition: all 0.3s ease;
+    border-radius: 12px !important;
+    border: 1px solid rgba(0,0,0,0.1) !important;
+}
+
+.article-page-body .main-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}
+
+.article-page-body .card-img-top {
+    height: 200px !important;
+    object-fit: cover !important;
+}
+
+/* Kategori butonları */
+.article-page-body .category-btn {
+    border: none !important;
+    border-left: 4px solid transparent !important;
+    transition: 0.3s;
+}
+
+.article-page-body .category-btn.active {
+    background-color: #fff5f5 !important;
+    color: #dc3545 !important;
+    border-left-color: #dc3545 !important;
+}
+
+/* --- YORUM SİSTEMİ STİLLERİ --- */
+.replies-container {
+    transition: all 0.3s ease-out;
+    border-left: 2px dashed #dee2e6;
+    margin-left: 2.5rem;
+    padding-left: 1rem;
+}
+
+.comment-like-btn {
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.comment-like-btn:hover {
+    transform: scale(1.1);
+}
+
+.comment-like-btn.text-danger i {
+    animation: heartBeat 0.3s ease-in-out;
+}
+
+@keyframes heartBeat {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+}
+
+.toggle-replies-btn {
+    color: #6c757d !important;
+    font-size: 0.8rem !important;
+}
+
+.toggle-replies-btn:hover {
+    color: #212529 !important;
+}
+
+/* Mobil için yanıt girintisini azalt */
+@media (max-width: 768px) {
+    .replies-container {
+        margin-left: 1rem;
+        padding-left: 0.5rem;
+    }
+    .ms-5 {
+        margin-left: 1.5rem !important;
+    }
+}

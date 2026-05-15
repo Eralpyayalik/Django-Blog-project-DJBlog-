@@ -131,13 +131,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') # 2. Canlıda buraya toplanacak
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')] # 3. Senin yazdığın dosyalar burada
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
-# 4. MIME type ve sıkıştırma desteği
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
-# Django 5.x uses STORAGES instead of deprecated STATICFILES_STORAGE
+# Django 5.x — WhiteNoise ile sıkıştırılmış static dosya desteği
 STORAGES = {
     "default": {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
