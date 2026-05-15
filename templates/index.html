@@ -2,195 +2,520 @@
 {% load static %}
 
 {% block head %}
-    <link rel="stylesheet" href="{% static 'css/test.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --accent: #f59e0b;
+            --bg-body: #f8fafc;
+            --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+            --card-hover-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+            --transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        body { 
+            background-color: var(--bg-body); 
+            font-family: 'Inter', sans-serif;
+            color: #1e293b;
+        }
+
+        h1, h2, h3, h4, h5, h6, .display-6 {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .fw-800 { font-weight: 800; }
+
+        /* Bento Grid Hero */
+        .bento-hero {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 280px 280px;
+            gap: 24px;
+            margin-bottom: 60px;
+        }
+
+        .bento-item {
+            position: relative;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition);
+        }
+
+        .bento-item:hover { 
+            transform: translateY(-8px);
+            box-shadow: var(--card-hover-shadow);
+        }
+
+        .bento-item-big { grid-column: span 2; grid-row: span 2; }
+        .bento-item-small { grid-column: span 1; grid-row: span 1; }
+
+        .bento-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: brightness(0.75);
+            transition: var(--transition);
+        }
+
+        .bento-item:hover .bento-img {
+            transform: scale(1.05);
+            filter: brightness(0.6);
+        }
+
+        .bento-content {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 40px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.85));
+            color: white;
+            z-index: 2;
+        }
+
+        /* Premium Article Cards */
+        .article-card {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.03);
+            box-shadow: var(--card-shadow);
+            transition: var(--transition);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .article-card:hover {
+            transform: translateY(-12px);
+            box-shadow: var(--card-hover-shadow);
+            border-color: rgba(37, 99, 235, 0.1);
+        }
+
+        .article-card-img-wrapper {
+            position: relative;
+            height: 240px;
+            overflow: hidden;
+        }
+
+        .article-card-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: var(--transition);
+        }
+
+        .article-card:hover .article-card-img {
+            transform: scale(1.08);
+        }
+
+        .article-card-body {
+            padding: 30px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .category-tag {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+            color: var(--primary);
+            margin-bottom: 12px;
+            display: inline-block;
+        }
+
+        .article-title {
+            font-size: 1.25rem;
+            line-height: 1.4;
+            font-weight: 700;
+            margin-bottom: 15px;
+            transition: color 0.3s;
+        }
+
+        .article-card:hover .article-title {
+            color: var(--primary);
+        }
+
+        /* Premium Search Box */
+        .premium-search {
+            position: relative;
+            background: white;
+            padding: 8px;
+            border-radius: 100px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            transition: var(--transition);
+            border: 2px solid transparent;
+        }
+
+        .premium-search:focus-within {
+            box-shadow: 0 10px 30px rgba(37, 99, 235, 0.15);
+            border-color: rgba(37, 99, 235, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .premium-search input {
+            border: none !important;
+            box-shadow: none !important;
+            padding: 12px 25px;
+            background: transparent;
+            font-weight: 500;
+        }
+
+        .search-btn {
+            background: var(--primary);
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .search-btn:hover {
+            background: var(--primary-hover);
+            transform: rotate(15deg);
+        }
+
+        /* Sidebar Widgets */
+        .modern-widget {
+            background: white;
+            border-radius: 24px;
+            padding: 28px;
+            margin-bottom: 30px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(0,0,0,0.02);
+        }
+
+        .widget-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 25px;
+        }
+
+        .widget-title {
+            font-size: 1rem;
+            font-weight: 800;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .widget-title i {
+            width: 32px;
+            height: 32px;
+            background: #f1f5f9;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+
+        .ranking-card {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 12px;
+            margin-bottom: 12px;
+            transition: var(--transition);
+            border: 1px solid transparent;
+        }
+
+        .ranking-card:hover {
+            background: white;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+            border-color: rgba(37, 99, 235, 0.1);
+            transform: translateX(5px);
+        }
+
+        /* Load More Button */
+        #load-more-btn {
+            background: white;
+            color: #1e293b;
+            padding: 16px 40px;
+            border-radius: 100px;
+            font-weight: 700;
+            border: 2px solid #e2e8f0;
+            transition: var(--transition);
+        }
+
+        #load-more-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: #f0f7ff;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.1);
+        }
+
+        @media (max-width: 992px) {
+            .bento-hero { grid-template-columns: 1fr; grid-template-rows: auto; }
+            .bento-item-big { grid-column: span 1; height: 350px; }
+            .bento-item-small { height: 200px; }
+        }
+    </style>
 {% endblock head %}
 
 {% block body %}
-<div class="container-fluid px-lg-5 mb-5">
+<div class="container-fluid px-lg-5 mt-5">
     
-    <div class="row g-3 mb-5">
-        <div class="col-lg-8">
-            {% if latest_article %}
-            <div class="card bg-dark text-white border-0 rounded-4 overflow-hidden shadow-lg h-100" style="min-height: 450px;">
-                {% if latest_article.article_image %}
-                    <img src="{{ latest_article.article_image.url }}" class="card-img opacity-50 h-100" style="object-fit: cover;">
-                {% endif %}
-                <div class="card-img-overlay d-flex flex-column justify-content-end p-4">
-                    <span class="badge bg-danger mb-2 w-fit">YENİ</span>
-                    <h2 class="display-5 fw-bold"><a href="{% url 'article:detail' latest_article.slug %}" class="text-white text-decoration-none">{{ latest_article.title }}</a></h2>
-                    <p class="lead d-none d-md-block">{{ latest_article.content|safe|striptags|truncatechars:120 }}</p>
-                </div>
-            </div>
+    <!-- Bento Hero Section -->
+    <div class="bento-hero">
+        {% if latest_article %}
+        <div class="bento-item bento-item-big">
+            {% if latest_article.article_image %}
+                <img src="{{ latest_article.article_image.url }}" class="bento-img">
             {% endif %}
-        </div>
-
-        <div class="col-lg-4 d-flex flex-column gap-3">
-            {% for pop in popular_articles|slice:":2" %}
-            <div class="card border-0 rounded-4 shadow-sm flex-fill overflow-hidden text-white" 
-                 style="background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('{{ pop.article_image.url }}'); background-size: cover; background-position: center;">
-                <div class="card-body d-flex flex-column justify-content-center">
-                    <span class="badge bg-primary mb-2 w-fit" style="font-size: 0.6rem;">TREND</span>
-                    <h6 class="fw-bold mb-1"><a href="{% url 'article:detail' pop.slug %}" class="text-white text-decoration-none">{{ pop.title }}</a></h6>
-                    <small class="opacity-75"><i class="fas fa-eye me-1"></i>{{ pop.read_count }} Görüntülenme</small>
+            <div class="bento-content">
+                <span class="badge bg-white text-primary rounded-pill mb-3 px-3 py-2 fw-bold" style="font-size: 0.7rem;">SON HABER</span>
+                <h2 class="display-5 fw-800">
+                    <a href="{% url 'article:detail' latest_article.slug %}" class="text-white text-decoration-none stretched-link">
+                        {{ latest_article.title }}
+                    </a>
+                </h2>
+                <p class="opacity-75 d-none d-md-block mt-3">{{ latest_article.content|safe|striptags|truncatechars:180 }}</p>
+                <div class="d-flex align-items-center gap-3 mt-4">
+                    <img src="{{ latest_article.author.profile.image.url|default:'/static/img/default-user.png' }}" class="rounded-circle border border-white border-2" style="width:40px; height:40px; object-fit:cover;">
+                    <div>
+                        <div class="small fw-bold">{{ latest_article.author.username }}</div>
+                        <div class="small opacity-50">{{ latest_article.created_date|date:"d F Y" }}</div>
+                    </div>
                 </div>
             </div>
-            {% endfor %}
         </div>
+        {% endif %}
+
+        {% for pop in popular_articles|slice:":2" %}
+        <div class="bento-item bento-item-small">
+            {% if pop.article_image %}
+                <img src="{{ pop.article_image.url }}" class="bento-img">
+            {% endif %}
+            <div class="bento-content p-4">
+                <span class="badge bg-warning text-dark rounded-pill mb-2 px-2" style="font-size: 0.6rem;">TRENDİNG</span>
+                <h5 class="fw-bold mb-0">
+                    <a href="{% url 'article:detail' pop.slug %}" class="text-white text-decoration-none stretched-link">
+                        {{ pop.title }}
+                    </a>
+                </h5>
+            </div>
+        </div>
+        {% endfor %}
     </div>
 
     <div class="row">
-                <div class="col-lg-2 d-none d-lg-block">
-            <h6 class="fw-bold text-uppercase small text-muted mb-3">
-                <i class="fas fa-trophy me-2 text-warning"></i>Sıralama
-            </h6>
-            <div class="list-group list-group-flush shadow-sm rounded-4 overflow-hidden border bg-white">
-                {% for top_user in top_users %}
-                <a href="{% url 'user:profile' top_user.username %}" class="list-group-item list-group-item-action py-3 border-0">
-                    <div class="d-flex align-items-center mb-2">
-                        <div class="position-relative">
-                            {% if top_user.profile.image %}
-                                <img src="{{ top_user.profile.image.url }}" class="rounded-circle me-2 border" style="width: 40px; height: 40px; object-fit: cover;">
-                            {% else %}
-                                <i class="fas fa-user-circle fa-2x text-muted me-2"></i>
-                            {% endif %}
-                            <span class="position-absolute bottom-0 end-0 p-1 bg-success border border-white rounded-circle"></span>
-                        </div>
-                        <div class="overflow-hidden">
-                            <div class="fw-bold small text-dark text-truncate">{{ top_user.username }}</div>
-                            <small class="text-muted" style="font-size: 0.65rem;">{{ top_user.profile.total_xp }} XP</small>
-                        </div>
-                    </div>
-                    
-                    <div class="d-flex align-items-center gap-1 mt-1">
-                        <span class="badge w-100 py-1 shadow-sm" style="background-color: {{ top_user.profile.rank_info.color }}; font-size: 0.6rem;">
-                            <i class="fas {{ top_user.profile.rank_info.icon }} me-1"></i>
-                            {{ top_user.profile.rank_info.title }}
-                        </span>
-                    </div>
-                </a>
-                {% if not forloop.last %}<hr class="m-0 opacity-25">{% endif %}
-                {% endfor %}
+        <!-- Main Feed -->
+        <div class="col-lg-8">
+            <div class="d-flex align-items-center justify-content-between mb-5">
+                <h3 class="fw-800 m-0">Tüm Akış</h3>
+                <div class="text-muted small">Gösterilen: <span id="article-count">{{ articles|length }}</span> Makale</div>
             </div>
-        </div>
-
-        <div class="col-lg-7">
-            <h4 class="fw-bold mb-4 d-flex align-items-center">
-                <i class="fas fa-stream text-danger me-2"></i>Akış
-            </h4>
             
-            <div id="article-container">
+            <div class="row g-4" id="article-container">
                 {% for article in articles %}
                     {% if article.id != latest_article.id %}
-                        <div class="article-item {% if forloop.counter > 7 %}d-none{% endif %}">
-                            <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden main-card border-hover">
-                                <div class="row g-0">
-                                    <div class="col-md-4">
-                                        {% if article.article_image %}
-                                            <img src="{{ article.article_image.url }}" class="h-100 w-100" style="object-fit: cover; min-height: 200px;">
-                                        {% else %}
-                                            <div class="bg-dark h-100 d-flex align-items-center justify-content-center">
-                                                <i class="fas fa-image text-white-50 fa-2x"></i>
-                                            </div>
-                                        {% endif %}
+                    <div class="col-md-6 article-item">
+                        <div class="article-card">
+                            <div class="article-card-img-wrapper">
+                                {% if article.article_image %}
+                                    <img src="{{ article.article_image.url }}" class="article-card-img">
+                                {% else %}
+                                    <div class="bg-dark d-flex align-items-center justify-content-center h-100">
+                                        <i class="fas fa-image fa-2x text-white-50"></i>
                                     </div>
-                                    <div class="col-md-8">
-                                        <div class="card-body p-4">
-                                            <div class="d-flex justify-content-between mb-2 small">
-                                                <span class="text-danger fw-bold text-uppercase">{{ article.category.name|default:"Genel" }}</span>
-                                                <span class="text-muted"><i class="far fa-clock me-1"></i>{{ article.created_date|date:"d M" }}</span>
-                                            </div>
-                                            <h4 class="card-title fw-bold mb-3">
-                                                <a href="{% url 'article:detail' article.slug %}" class="text-decoration-none text-dark">{{ article.title }}</a>
-                                            </h4>
-                                            <p class="text-secondary small mb-3">{{ article.content|safe|striptags|truncatechars:130 }}</p>
-                                            
-                                            <div class="d-flex align-items-center justify-content-between">
-                                                <a href="{% url 'user:profile' article.author.username %}" class="text-decoration-none d-flex align-items-center">
-                                                    {% if article.author.profile.image %}
-                                                        <img src="{{ article.author.profile.image.url }}" class="rounded-circle me-2 border" style="width: 30px; height: 30px; object-fit: cover;">
-                                                    {% else %}
-                                                        <i class="fas fa-user-circle fa-lg text-muted me-2"></i>
-                                                    {% endif %}
-                                                    <span class="small fw-bold text-dark">{{ article.author.username }}</span>
-                                                </a>
-                                                <small class="text-muted"><i class="fas fa-eye me-1"></i>{{ article.read_count }}</small>
-                                            </div>
-                                        </div>
+                                {% endif %}
+                                <div class="position-absolute top-0 start-0 p-3">
+                                    <span class="badge bg-white text-dark rounded-pill shadow-sm">{{ article.category.name|default:"Teknoloji" }}</span>
+                                </div>
+                            </div>
+                            <div class="article-card-body">
+                                <h4 class="article-title">
+                                    <a href="{% url 'article:detail' article.slug %}" class="text-dark text-decoration-none">
+                                        {{ article.title }}
+                                    </a>
+                                </h4>
+                                <p class="text-muted small mb-4 line-clamp-3">{{ article.content|safe|striptags|truncatechars:120 }}</p>
+                                
+                                <div class="mt-auto d-flex align-items-center justify-content-between pt-3 border-top border-light">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="{{ article.author.profile.image.url|default:'/static/img/default-user.png' }}" class="rounded-circle" style="width:28px; height:28px; object-fit:cover;">
+                                        <span class="small fw-600">{{ article.author.username }}</span>
                                     </div>
+                                    <small class="text-muted fw-500">{{ article.created_date|date:"d M" }}</small>
                                 </div>
                             </div>
                         </div>
+                    </div>
                     {% endif %}
                 {% endfor %}
             </div>
 
-            <div class="text-center my-4">
-                <button id="load-more-btn" class="btn btn-outline-danger rounded-pill px-5 fw-bold shadow-sm">
-                    <i class="fas fa-plus me-2"></i>Daha Fazla Göster
+            {% if page_obj.has_next %}
+            <div class="text-center my-5 pt-4">
+                <button id="load-more-btn" data-next-page="{{ page_obj.next_page_number }}">
+                    <i class="fas fa-plus-circle me-2"></i> Daha Fazla Makale Yükle
                 </button>
             </div>
+            {% endif %}
         </div>
 
-        <div class="col-lg-3">
-            <div class="card border-0 bg-dark text-white rounded-4 shadow-sm mb-4">
-                <div class="card-body p-4">
-                    <h6 class="fw-bold mb-3 small">PORTALDA ARA</h6>
-                    <form action="{% url 'article:articles' %}" method="get">
-                        <div class="input-group bg-white rounded-pill p-1">
-                            <input type="text" name="keyword" class="form-control border-0 px-3" placeholder="Donanım, Yazılım...">
-                            <button class="btn btn-danger rounded-pill px-3" type="submit"><i class="fas fa-search"></i></button>
-                        </div>
-                    </form>
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Search -->
+            <div class="modern-widget">
+                <div class="widget-header">
+                    <h6 class="widget-title"><i class="fas fa-search text-primary"></i>Hızlı Arama</h6>
                 </div>
+                <form action="{% url 'article:articles' %}" method="get">
+                    <div class="premium-search d-flex align-items-center">
+                        <input type="text" name="keyword" class="form-control" placeholder="Teknoloji ara...">
+                        <button class="btn search-btn" type="submit">
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </form>
             </div>
 
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-body p-4">
-                    <h6 class="fw-bold mb-4 border-bottom pb-2 text-uppercase small">En Çok Beğenilenler</h6>
-                    {% for top in top_liked_articles %}
-                    <div class="d-flex align-items-center gap-3 mb-3">
-                        <span class="h4 fw-bold text-danger opacity-25 m-0">0{{ forloop.counter }}</span>
-                        <div>
-                            <a href="{% url 'article:detail' top.slug %}" class="text-decoration-none text-dark fw-bold small d-block mb-1">{{ top.title }}</a>
-                            <small class="text-muted" style="font-size: 0.7rem;"><i class="fas fa-heart text-danger me-1"></i>{{ top.likes.count|default:"0" }} Beğeni</small>
+            <!-- Authors -->
+            <div class="modern-widget">
+                <div class="widget-header">
+                    <h6 class="widget-title"><i class="fas fa-star text-warning"></i>Top Yazarlar</h6>
+                </div>
+                {% for top_user in top_users %}
+                <a href="{% url 'user:profile' top_user.username %}" class="text-decoration-none d-block ranking-card">
+                    <div class="d-flex align-items-center">
+                        <div class="position-relative">
+                            <img src="{{ top_user.profile.image.url|default:'/static/img/default-user.png' }}" class="rounded-circle border" style="width:45px; height:45px; object-fit:cover;">
+                            <span class="position-absolute bottom-0 end-0 p-1 bg-success border border-white rounded-circle"></span>
+                        </div>
+                        <div class="ms-3 overflow-hidden">
+                            <div class="fw-bold text-dark small">{{ top_user.username }}</div>
+                            <span class="badge py-1 px-2 mt-1 rank-badge rank-{{ top_user.profile.rank_info.class }}" style="font-size:0.6rem;">
+                                <i class="fas {{ top_user.profile.rank_info.icon }} me-1"></i>
+                                {{ top_user.profile.rank_info.title|upper }}
+                            </span>
+                        </div>
+                        <div class="ms-auto text-end">
+                            <small class="fw-bold text-primary">{{ top_user.profile.total_xp }}</small>
+                            <div class="text-muted" style="font-size:0.5rem;">XP</div>
                         </div>
                     </div>
-                    {% endfor %}
-                </div>
+                </a>
+                {% endfor %}
             </div>
-            <div class="card border-0 shadow-sm rounded-4 bg-white mt-4">
-            <div class="card-body p-4">
-                <h6 class="fw-bold mb-4 border-bottom pb-2 text-uppercase small text-primary">
-                    <i class="fas fa-comments me-2"></i>En Çok Tartışılanlar
-                </h6>
-                
-                {% for top_comm in most_commented_articles %}
-                <div class="d-flex align-items-start gap-3 {% if not forloop.last %}mb-3{% endif %}">
-                    <span class="h5 fw-bold text-primary opacity-25 m-0">#{{ forloop.counter }}</span>
-                    
+
+            <!-- Trending -->
+            <div class="modern-widget">
+                <div class="widget-header">
+                    <h6 class="widget-title"><i class="fas fa-fire text-danger"></i>Trend Haberler</h6>
+                </div>
+                {% for top in top_liked_articles %}
+                <div class="d-flex align-items-start gap-3 mb-4 last-mb-0">
+                    <div class="display-6 fw-800 text-light m-0" style="line-height: 1;">{{ forloop.counter }}</div>
                     <div class="overflow-hidden">
-                        <a href="{% url 'article:detail' top_comm.slug %}" class="text-decoration-none text-dark fw-bold small d-block mb-1 text-truncate">
-                            {{ top_comm.title }}
+                        <a href="{% url 'article:detail' top.slug %}" class="text-dark text-decoration-none fw-bold small d-block mb-2 hover-primary transition">
+                            {{ top.title }}
                         </a>
-                        <div class="d-flex align-items-center justify-content-between">
-                            <small class="text-muted" style="font-size: 0.7rem;">
-                                <i class="far fa-comment-dots me-1"></i>{{ top_comm.comment_count }} Yorum
-                            </small>
-                            {% if top_comm.comment_count > 5 %}
-                                <i class="fas fa-fire-alt text-warning animated-fire" style="font-size: 0.8rem;"></i>
-                            {% endif %}
+                        <div class="d-flex align-items-center gap-3">
+                            <small class="text-muted" style="font-size:0.7rem;"><i class="fas fa-heart text-danger me-1"></i>{{ top.likes.count }} Beğeni</small>
+                            <small class="text-muted" style="font-size:0.7rem;"><i class="fas fa-comment me-1"></i>{{ top.comments.count }}</small>
                         </div>
                     </div>
                 </div>
                 {% endfor %}
             </div>
         </div>
-            
-        </div>
     </div>
 </div>
-
 {% endblock body %}
+
 {% block scripts %}
-    <script src="{% static 'js/filter.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const loadMoreBtn = document.getElementById('load-more-btn');
+    const container = document.getElementById('article-container');
+    const countDisplay = document.getElementById('article-count');
+
+    if (loadMoreBtn) {
+        loadMoreBtn.addEventListener('click', function() {
+            const nextPage = this.getAttribute('data-next-page');
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Yükleniyor...';
+            this.disabled = true;
+
+            fetch(`/?page=${nextPage}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                data.articles.forEach(article => {
+                    const html = `
+                        <div class="col-md-6 article-item" style="opacity:0; transform:translateY(20px); transition: all 0.5s ease;">
+                            <div class="article-card">
+                                <div class="article-card-img-wrapper">
+                                    ${article.image_url ? 
+                                        `<img src="${article.image_url}" class="article-card-img">` : 
+                                        `<div class="bg-dark d-flex align-items-center justify-content-center h-100"><i class="fas fa-image fa-2x text-white-50"></i></div>`
+                                    }
+                                    <div class="position-absolute top-0 start-0 p-3">
+                                        <span class="badge bg-white text-dark rounded-pill shadow-sm">${article.category}</span>
+                                    </div>
+                                </div>
+                                <div class="article-card-body">
+                                    <h4 class="article-title">
+                                        <a href="/articles/article/${article.slug}/" class="text-dark text-decoration-none">${article.title}</a>
+                                    </h4>
+                                    <p class="text-muted small mb-4 line-clamp-3">${article.content}...</p>
+                                    <div class="mt-auto d-flex align-items-center justify-content-between pt-3 border-top border-light">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <img src="${article.author_image}" class="rounded-circle" style="width:28px; height:28px; object-fit:cover;">
+                                            <span class="small fw-600">${article.author}</span>
+                                        </div>
+                                        <small class="text-muted fw-500">${article.date}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = html;
+                    const newArticle = tempDiv.firstElementChild;
+                    container.appendChild(newArticle);
+                    
+                    // Trigger animation
+                    setTimeout(() => {
+                        newArticle.style.opacity = '1';
+                        newArticle.style.transform = 'translateY(0)';
+                    }, 50);
+                });
+
+                // Update count display
+                countDisplay.innerText = document.querySelectorAll('.article-item').length;
+
+                if (data.has_next) {
+                    loadMoreBtn.setAttribute('data-next-page', data.next_page_number);
+                    loadMoreBtn.innerHTML = originalText;
+                    loadMoreBtn.disabled = false;
+                } else {
+                    loadMoreBtn.parentElement.innerHTML = '<div class="text-muted small fw-bold">Tüm içerikler yüklendi.</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Error loading more articles:', error);
+                loadMoreBtn.innerHTML = 'Hata Oluştu, Tekrar Dene';
+                loadMoreBtn.disabled = false;
+            });
+        });
+    }
+});
+</script>
+<script src="{% static 'js/filter.js' %}"></script>
 {% endblock scripts %}

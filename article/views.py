@@ -42,11 +42,17 @@ def articles(request):
     articles=Article.objects.all()
     return render(request,"articles.html",{"articles":articles})
 """
+from django.core.paginator import Paginator
+
 def index(request):
+    articles_list = Article.objects.all().order_by('-created_date')
+    
+    # 6 articles per page
+    paginator = Paginator(articles_list, 6)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
 
-    articles = Article.objects.all().order_by('-created_date')
-
-    latest_article = articles.first()
+    latest_article = articles_list.first()
 
     popular_articles = Article.objects.all().order_by('-read_count')[:2]
 
@@ -61,14 +67,38 @@ def index(request):
         comment_count=Count('comments') 
     ).order_by('-comment_count')[:5]
 
+    # AJAX Load More support
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        articles_data = []
+        for article in page_obj:
+            if article.id != latest_article.id:
+                articles_data.append({
+                    'id': article.id,
+                    'title': article.title,
+                    'slug': article.slug,
+                    'content': article.content[:100], # Basic strip done in JS/template or here
+                    'image_url': article.article_image.url if article.article_image else None,
+                    'author': article.author.username,
+                    'author_image': article.author.profile.image.url if article.author.profile.image else '/static/img/default-user.png',
+                    'date': article.created_date.strftime("%d %b"),
+                    'category': article.category.name if article.category else 'Teknoloji'
+                })
+        return JsonResponse({
+            'articles': articles_data,
+            'has_next': page_obj.has_next(),
+            'next_page_number': page_obj.next_page_number() if page_obj.has_next() else None
+        })
+
     return render(request, 'index.html', {
-        'articles': articles, 
+        'articles': page_obj, # Use page_obj instead of full articles list
         'latest_article': latest_article,
         'popular_articles': popular_articles,
         'top_liked_articles': top_liked_articles,
         'top_users': top_users,
         'most_commented_articles': most_commented_articles,
+        'page_obj': page_obj
     })
+
 
 def about(request):
     return render(request,"about.html")
@@ -119,7 +149,7 @@ def detail(request, slug):
 
         request.session[session_key] = True 
 
-    comments = article.comments.all()
+    comments = article.comments.filter(parent=None)
 
     return render(request, "detail.html", {
         "article": article,
@@ -167,8 +197,18 @@ def addComment(request, id):
     if request.method == "POST":
         author = request.POST.get("comment_author")
         content = request.POST.get("comment_content")
+        parent_id = request.POST.get("parent_id") 
+        
         newComment = Comment(comment_author=author, comment_content=content, article=article)
         
+        # EĞER BİR YANITSA ÜST YORUMA BAĞLA
+        if parent_id:
+            try:
+                parent_obj = Comment.objects.get(id=parent_id)
+                newComment.parent = parent_obj
+            except Comment.DoesNotExist:
+                pass
+            
         if request.user.is_authenticated:
             newComment.user = request.user
         newComment.save()
@@ -196,10 +236,12 @@ def addComment(request, id):
                 'is_author': (author == article.author.username),
                 'is_registered_user': request.user.is_authenticated, 
                 'is_staff': request.user.is_staff,
-                'is_superuser': request.user.is_superuser
+                'is_superuser': request.user.is_superuser,
+                'parent_id': parent_id 
             })
             
-    return redirect('article:detail', id=id)
+    
+    return redirect('article:detail', slug=article.slug)
 
 def category_detail(request, slug):
     category = Category.objects.get(slug=slug)
@@ -223,4 +265,19 @@ def like_article(request, id):
     
     return redirect("article:detail", id=id)
     
+
+@login_required
+def likeComment(request, id):
+    comment = get_object_or_404(Comment, id=id)
+    if request.user in comment.likes.all():
+        comment.likes.remove(request.user)
+        liked = False
+    else:
+        comment.likes.add(request.user)
+        liked = True
+    
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({'liked': liked, 'count': comment.likes.count()})
+        
+    return redirect('article:detail', slug=comment.article.slug)
     

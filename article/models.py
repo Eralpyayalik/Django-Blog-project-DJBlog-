@@ -2,6 +2,7 @@ from django.db import models
 from ckeditor.fields import RichTextField
 from django.utils.text import slugify
 from PIL import Image
+from django.contrib.auth.models import User
 
 import user
 # Create your models here.
@@ -74,6 +75,8 @@ class Comment(models.Model):
     comment_author = models.CharField(max_length=50, verbose_name="İsim")
     comment_content = models.CharField(max_length=200, verbose_name="Yorum")
     comment_date = models.DateTimeField(auto_now_add=True)
+    parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='replies')
+    likes = models.ManyToManyField(User, related_name='comment_likes', blank=True)
 
     def __str__(self):
         return self.comment_content

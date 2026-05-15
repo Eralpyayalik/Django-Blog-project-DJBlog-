@@ -130,3 +130,159 @@ def profile_view(request, username):
         'user_profile': user_profile 
     }
     return render(request, 'profile.html', context)
+
+from .models import Message, Notification
+from django.db.models import Q
+from django.http import JsonResponse
+
+@login_required(login_url="user:login")
+def inbox(request):
+    # Kullanıcının dahil olduğu tüm mesajlardan benzersiz diğer kullanıcıları bul
+    received_messages = Message.objects.filter(receiver=request.user).values_list('sender', flat=True)
+    sent_messages = Message.objects.filter(sender=request.user).values_list('receiver', flat=True)
+    
+    user_ids = set(list(received_messages) + list(sent_messages))
+    users = User.objects.filter(id__in=user_ids).distinct()
+    
+    # Her kullanıcıyla olan son mesajı ve okunmamış mesaj sayısını bulabiliriz
+    conversations = []
+    for u in users:
+        last_msg = Message.objects.filter(
+            (Q(sender=request.user) & Q(receiver=u)) | 
+            (Q(sender=u) & Q(receiver=request.user))
+        ).order_by('-created_at').first()
+        
+        unread_count = Message.objects.filter(sender=u, receiver=request.user, is_read=False).count()
+        
+        conversations.append({
+            'user': u,
+            'last_message': last_msg,
+            'unread_count': unread_count
+        })
+    
+    # Son mesaja göre sırala
+    conversations.sort(key=lambda x: x['last_message'].created_at if x['last_message'] else None, reverse=True)
+
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        conv_data = []
+        for c in conversations:
+            conv_data.append({
+                'user_id': c['user'].id,
+                'username': c['user'].username,
+                'avatar': c['user'].profile.image.url if hasattr(c['user'], 'profile') and c['user'].profile.image else '/media/default.jpg',
+                'last_msg': c['last_message'].body[:30] if c['last_message'] else '',
+                'unread': c['unread_count'],
+                'time': c['last_message'].created_at.strftime("%H:%M") if c['last_message'] else '',
+                'is_online': c['user'].profile.is_online
+            })
+        return JsonResponse({'conversations': conv_data})
+
+    return render(request, 'user/inbox.html', {'conversations': conversations})
+
+@login_required(login_url="user:login")
+def chat_detail(request, user_id):
+    other_user = get_object_or_404(User, id=user_id)
+    
+    if request.method == 'POST':
+        body = request.POST.get('body')
+        if body:
+            msg = Message.objects.create(sender=request.user, receiver=other_user, body=body)
+            Notification.objects.create(
+                user=other_user,
+                sender=request.user,
+                notification_type='message',
+                text=f"{request.user.username} size bir mesaj gönderdi."
+            )
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'status': 'success', 'body': msg.body, 'time': msg.created_at.strftime("%H:%M")})
+            return redirect('user:chat_detail', user_id=user_id)
+
+    messages_list = Message.objects.filter(
+        (Q(sender=request.user) & Q(receiver=other_user)) | 
+        (Q(sender=other_user) & Q(receiver=request.user))
+    ).order_by('created_at')
+    
+    unread_messages = messages_list.filter(receiver=request.user, is_read=False)
+    unread_messages.update(is_read=True)
+    
+    # Bildirimleri de okundu yap
+    Notification.objects.filter(user=request.user, sender=other_user, is_read=False).update(is_read=True)
+
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        msg_data = []
+        for m in messages_list:
+            msg_data.append({
+                'sender': m.sender.username,
+                'avatar': m.sender.profile.image.url if hasattr(m.sender, 'profile') and m.sender.profile.image else '/media/default.jpg',
+                'body': m.body,
+                'time': m.created_at.strftime("%H:%M"),
+                'is_me': m.sender == request.user,
+                'is_read': m.is_read
+            })
+        return JsonResponse({
+            'messages': msg_data,
+            'other_user': {
+                'id': other_user.id,
+                'username': other_user.username,
+                'avatar': other_user.profile.image.url if hasattr(other_user, 'profile') and other_user.profile.image else '/media/default.jpg',
+                'is_online': other_user.profile.is_online,
+                'last_seen': other_user.profile.last_seen.strftime("%H:%M") if other_user.profile.last_seen else "Hiç görülmedi"
+            }
+        })
+
+    return render(request, 'user/chat_detail.html', {
+        'other_user': other_user,
+        'messages_list': messages_list
+    })
+
+
+@login_required(login_url="user:login")
+def notifications(request):
+    unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
+    
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({'unread_count': unread_count})
+        
+    notifs = Notification.objects.filter(user=request.user).order_by('-created_at')
+    return render(request, 'user/notifications.html', {
+        'notifs': notifs,
+        'unread_count': unread_count
+    })
+
+@login_required(login_url="user:login")
+def notifications_api(request):
+    from django.utils import timezone
+    Profile.objects.filter(user=request.user).update(last_seen=timezone.now())
+    unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
+    last_notifs = Notification.objects.filter(user=request.user).order_by('-created_at')[:5]
+    
+    notif_data = []
+    for n in last_notifs:
+        notif_data.append({
+            'text': n.text,
+            'sender': n.sender.username if n.sender else "Sistem",
+            'sender_id': n.sender.id if n.sender else None,
+            'avatar': n.sender.profile.image.url if n.sender and hasattr(n.sender, 'profile') and n.sender.profile.image else '/media/default.jpg',
+            'time': n.created_at.strftime("%H:%M"),
+            'is_read': n.is_read
+        })
+        
+    return JsonResponse({
+        'unread_count': unread_count,
+        'notifications': notif_data
+    })
+
+@login_required(login_url="user:login")
+def messages_page(request):
+    target_user_id = request.GET.get('user_id')
+    target_user = None
+    if target_user_id:
+        try:
+            from django.contrib.auth.models import User
+            target_user = User.objects.get(id=target_user_id)
+        except User.DoesNotExist:
+            pass
+            
+    return render(request, 'user/messages.html', {
+        'target_user': target_user
+    })

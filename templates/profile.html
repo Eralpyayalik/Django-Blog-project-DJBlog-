@@ -15,7 +15,7 @@
                     {% endif %}
                     
                     {% if user_profile.profile %}
-                    <span class="position-absolute bottom-0 end-0 badge rounded-pill p-2 shadow" style="background-color: {{ user_profile.profile.rank_info.color }};">
+                    <span class="position-absolute bottom-0 end-0 badge rounded-pill p-2 shadow" {% if user_profile.profile.rank_info %}style="background-color: {{ user_profile.profile.rank_info.color }};"{% endif %}>
                         <i class="fas {{ user_profile.profile.rank_info.icon }}"></i>
                     </span>
                     {% endif %}
@@ -28,14 +28,14 @@
 
                 {% if user_profile.profile %}
                     <div class="badge p-2 mb-3 w-100" 
-                        style="background-color: {{ user_profile.profile.rank_info.color }}22; 
+                        {% if user_profile.profile.rank_info %}style="background-color: {{ user_profile.profile.rank_info.color }}22; 
                                 color: {{ user_profile.profile.rank_info.color }}; 
-                                border: 1px solid {{ user_profile.profile.rank_info.color }};">
+                                border: 1px solid {{ user_profile.profile.rank_info.color }};"{% endif %}>
                         <span class="fw-bold">{{ user_profile.profile.rank_info.title }}</span>
                     </div>
 
                     <div class="progress mb-2" style="height: 8px;">
-                        <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: {{ user_profile.profile.total_xp|default:0 }}%; background-color: {{ user_profile.profile.rank_info.color }};"></div>
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" {% if user_profile.profile %}style="width: {{ user_profile.profile.total_xp|default:0 }}%; background-color: {{ user_profile.profile.rank_info.color }};"{% else %}style="width: 0%;"{% endif %}></div>
                     </div>
                     <small class="text-muted d-block mb-3">{{ user_profile.profile.total_xp|default:0 }} XP Puanı</small>
                 {% else %}
@@ -57,7 +57,17 @@
                         <a href="{{ user_profile.profile.linkedin }}" target="_blank" class="btn btn-outline-primary btn-sm rounded-circle"><i class="fab fa-linkedin-in"></i></a>
                     {% endif %}
                 </div>
+
+                {% if request.user.is_authenticated and user_profile != request.user %}
+                <div class="mt-4">
+                    <a href="{% url 'user:messages_page' %}?user_id={{ user_profile.id }}" 
+                       class="btn btn-primary w-100 rounded-pill shadow-sm py-2">
+                        <i class="fas fa-paper-plane me-2"></i>Mesaj Gönder
+                    </a>
+                </div>
+                {% endif %}
             </div>
+
         </div>
 
         <div class="col-lg-8 col-md-7">

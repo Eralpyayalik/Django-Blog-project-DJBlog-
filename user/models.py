@@ -13,6 +13,15 @@ class Profile(models.Model):
     bio = models.TextField(max_length=500, blank=True, verbose_name="Hakkımda")
     github = models.URLField(max_length=200, blank=True)
     linkedin = models.URLField(max_length=200, blank=True)
+    last_seen = models.DateTimeField(null=True, blank=True, verbose_name="Son Görülme")
+
+    @property
+    def is_online(self):
+        if self.last_seen:
+            from django.utils import timezone
+            now = timezone.now()
+            return now < self.last_seen + timezone.timedelta(minutes=5)
+        return False
 
     def __str__(self):
         return f'{self.user.username} Profili'
@@ -32,13 +41,13 @@ class Profile(models.Model):
     def rank_info(self):
         xp = self.total_xp
         if xp < 100:
-            return {"title": "Çaylak Yazar", "color": "#6c757d", "icon": "fa-pen-nib"}
+            return {"title": "Çaylak Yazar", "color": "#6c757d", "icon": "fa-pen-nib", "class": "caylak"}
         elif xp < 300:
-            return {"title": "Yetkin Kalem", "color": "#17a2b8", "icon": "fa-book-open"}
+            return {"title": "Yetkin Kalem", "color": "#17a2b8", "icon": "fa-book-open", "class": "yetkin"}
         elif xp < 700:
-            return {"title": "Usta Yazar", "color": "#007bff", "icon": "fa-keyboard"}
+            return {"title": "Usta Yazar", "color": "#007bff", "icon": "fa-keyboard", "class": "usta"}
         else:
-            return {"title": "Baş Editör", "color": "#ffc107", "icon": "fa-award"}
+            return {"title": "Baş Editör", "color": "#ffc107", "icon": "fa-award", "class": "editor"}
 
     @receiver(post_save, sender=User)
     def create_profile(sender, instance, created, **kwargs):
@@ -49,5 +58,33 @@ class Profile(models.Model):
     def save_profile(sender, instance, **kwargs):
         if hasattr(instance, 'profile'):
             instance.profile.save()
+
+class Message(models.Model):
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
+    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_messages')
+    body = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"From {self.sender} to {self.receiver}"
+
+    class Meta:
+        ordering = ['-created_at']
+
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications') # Bildirimi alacak kişi
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='triggered_notifications', null=True, blank=True) # Bildirimi tetikleyen kişi
+    notification_type = models.CharField(max_length=20) # 'message', 'like', 'reply' vb.
+    text = models.CharField(max_length=255)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Notification for {self.user}: {self.notification_type}"
+
+    class Meta:
+        ordering = ['-created_at']
+
         
 
