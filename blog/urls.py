@@ -29,7 +29,9 @@ urlpatterns = [
     path('kategori/<slug:category_slug>/', views.index, name='category_articles'),
 ]
 
+# Media dosyaları her zaman Django tarafından servis edilsin (Railway dahil)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# Static dosyalar sadece lokalde Django ile servis edilir, production'da WhiteNoise halleder
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-    
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
