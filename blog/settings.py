@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-bz61jl0jjti5g9vxs*@23be5z58-%r%pnc72sk-u1tw43to4qh
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["django-blog-project-djblog-production.up.railway.app"]
 
 
 # Application definition
