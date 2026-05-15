@@ -36,14 +36,14 @@ CSRF_TRUSTED_ORIGINS = ["https://django-blog-project-djblog-production.up.railwa
 # Application definition
 
 INSTALLED_APPS = [
+    'cloudinary_storage',         
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'cloudinary_storage',  # django.contrib.staticfiles'den sonra olmalı
-    'cloudinary',
+    'django.contrib.staticfiles', 
+    'cloudinary',                 
     "article",
     "user",
     'crispy_forms',
