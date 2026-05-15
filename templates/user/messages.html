@@ -227,8 +227,9 @@ $(document).ready(function() {
     chatSocket.onopen = function() { console.log("WebSocket connected successfully!"); };
     chatSocket.onerror = function(e) { console.error("WebSocket error:", e); };
     chatSocket.onclose = function() { 
-        console.warn("WebSocket closed. Reconnecting in 5s..."); 
-        setTimeout(() => { location.reload(); }, 5000); 
+        console.warn("WebSocket closed. Attempting reconnect..."); 
+        // Döngüye girip sayfayı kilitlememesi için reload kaldırıldı
+        // Daha güvenli bir yeniden bağlanma denemesi yapılabilir
     };
 
     chatSocket.onmessage = function(e) {
@@ -294,7 +295,8 @@ $(document).ready(function() {
                         <div class="inbox-item p-3 d-flex align-items-center gap-3 ${isActive}" data-user-id="${c.user_id}" data-username="${c.username}">
                             <div class="position-relative">
                                 <div class="avatar-placeholder-circle shadow-sm" style="width: 45px; height: 45px;">
-                                    ${showAvatar ? `<img src="${c.avatar}" class="rounded-circle" style="width: 100%; height: 100%; object-fit: cover;">` : `<span class="initials-text">${getInitials(c.username)}</span>`}
+                                    ${showAvatar ? `<img src="${c.avatar}" class="rounded-circle" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">` : ''}
+                                    <span class="initials-text" style="${showAvatar ? 'display:none;' : ''}">${getInitials(c.username)}</span>
                                 </div>
                                 ${c.is_online ? '<span class="status-dot-modern status-online"></span>' : ''}
                             </div>
@@ -344,12 +346,20 @@ $(document).ready(function() {
                 if (data.other_user) {
                     $("#chat-target-name").text(data.other_user.username);
                     let hasAvatar = data.other_user.avatar && data.other_user.avatar.indexOf("default") === -1;
+                    
+                    const avatarImg = $("#chat-user-avatar");
+                    const initialsSpan = $("#chat-user-initials");
+                    
                     if(hasAvatar) {
-                        $("#chat-user-avatar").attr("src", data.other_user.avatar).show();
-                        $("#chat-user-initials").hide();
+                        avatarImg.attr("src", data.other_user.avatar).show();
+                        avatarImg.on("error", function() {
+                            $(this).hide();
+                            initialsSpan.text(getInitials(data.other_user.username)).show();
+                        });
+                        initialsSpan.hide();
                     } else {
-                        $("#chat-user-avatar").hide();
-                        $("#chat-user-initials").text(getInitials(data.other_user.username)).show();
+                        avatarImg.hide();
+                        initialsSpan.text(getInitials(data.other_user.username)).show();
                     }
                     
                     if (data.other_user.is_online) {
