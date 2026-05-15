@@ -14,3 +14,4 @@ cloudinary
 django-cloudinary-storage
 channels
 daphne
+channels_redis

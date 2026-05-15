@@ -86,11 +86,16 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'blog.wsgi.application'
 ASGI_APPLICATION = 'blog.asgi.application'
+# Railway/Production Redis Ayarı
+REDIS_URL = os.environ.get('REDIS_URL', os.environ.get('REDIS_PRIVATE_URL', 'redis://localhost:6379'))
 
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer"
-    }
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [REDIS_URL],
+        },
+    },
 }
 
 
