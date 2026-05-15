@@ -111,34 +111,5 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // --- YORUM GÖNDERME (AJAX) ---
-    const commentForm = document.querySelector('#comment-form');
-    if (commentForm) {
-        commentForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const form = this;
-            const formData = new FormData(form);
-            const parentId = formData.get('parent_id');
 
-            fetch(form.action, {
-                method: 'POST',
-                body: formData,
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    // Yanıtsa sayfayı yenilemek en sağlıklısı (iç içe yapı karmaşıklığı için)
-                    // Normal yorumsa başa ekleyebiliriz ama kullanıcı deneyimi için yenileme daha güvenli
-                    if (parentId) {
-                        location.reload();
-                    } else {
-                        // Eğer ana yorumsa ve sayfa yenilenmesin isteniyorsa buraya ekleme kodu gelebilir
-                        // Ancak user "yanıt verilince yer değiştiriyor" dediği için reload en temiz çözüm.
-                        location.reload();
-                    }
-                }
-            });
-        });
-    }
 });
