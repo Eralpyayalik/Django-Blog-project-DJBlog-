@@ -1,1 +1,1 @@
-web: python manage.py collectstatic --noinput && gunicorn blog.wsgi
+web: python manage.py collectstatic --noinput && daphne -b 0.0.0.0 -p $PORT blog.asgi:application

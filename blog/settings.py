@@ -36,6 +36,7 @@ CSRF_TRUSTED_ORIGINS = ["https://django-blog-project-djblog-production.up.railwa
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'cloudinary_storage',         
     'django.contrib.admin',
     'django.contrib.auth',
@@ -50,6 +51,7 @@ INSTALLED_APPS = [
     'crispy_bootstrap4',
     'ckeditor',
     'django_cleanup.apps.CleanupConfig',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -83,6 +85,13 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'blog.wsgi.application'
+ASGI_APPLICATION = 'blog.asgi.application'
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+}
 
 
 # Database

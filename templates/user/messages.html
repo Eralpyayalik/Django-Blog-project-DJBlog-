@@ -172,6 +172,7 @@
                     <div>
                         <h6 class="m-0 fw-bold" id="chat-target-name">Kullanıcı</h6>
                         <small id="chat-target-status" class="text-muted">Son görülme: ...</small>
+                        <small id="chat-typing-status" class="text-primary fw-bold ms-2" style="display: none; font-style: italic;">... yazıyor</small>
                     </div>
                 </div>
             </div>
@@ -210,6 +211,34 @@ $(document).ready(function() {
     let activeUserId = null;
     let chatInterval = null;
     const currentUserId = "{{ request.user.id }}";
+    
+    // Notification Sound
+    const notificationSound = new Audio("https://actions.google.com/sounds/v1/communications/incoming_call_ringtone.ogg");
+    notificationSound.volume = 0.5;
+    
+    // WebSocket
+    const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
+    const chatSocket = new WebSocket(wsScheme + "://" + window.location.host + "/ws/chat/");
+    
+    let typingTimer;
+
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        if (data.type === 'typing' && data.sender_id == activeUserId) {
+            $("#chat-typing-status").show();
+            clearTimeout(typingTimer);
+            typingTimer = setTimeout(() => {
+                $("#chat-typing-status").hide();
+            }, 1500);
+        } else if (data.type === 'new_message') {
+            notificationSound.play().catch(e => console.log("Sound play error:", e));
+            loadInbox();
+            if (data.sender_id == activeUserId) {
+                loadChatHistory(activeUserId, true);
+            }
+        }
+    };
+
     
     function getInitials(name) {
         if (!name) return "??";
@@ -306,7 +335,11 @@ $(document).ready(function() {
                 
                 if (scrollToBottom) {
                     let chatArea = $("#chat-messages");
-                    if (chatArea.length) chatArea.scrollTop(chatArea[0].scrollHeight);
+                    if (chatArea.length) {
+                        setTimeout(() => {
+                            chatArea.scrollTop(chatArea[0].scrollHeight);
+                        }, 100);
+                    }
                 }
             }
         });
@@ -335,7 +368,16 @@ $(document).ready(function() {
         chatInterval = setInterval(function() {
             loadChatHistory(activeUserId, false);
             loadInbox();
-        }, 5000); // Poll every 5 seconds to reduce terminal spam
+        }, 15000); // Poll every 15 seconds as a fallback, websockets handle real-time
+    });
+
+    $("#chat-input").on("input", function() {
+        if (chatSocket.readyState === WebSocket.OPEN && activeUserId) {
+            chatSocket.send(JSON.stringify({
+                'action': 'typing',
+                'receiver_id': activeUserId
+            }));
+        }
     });
 
     // Handle message send
@@ -378,13 +420,13 @@ $(document).ready(function() {
         chatInterval = setInterval(function() {
             loadChatHistory(activeUserId, false);
             loadInbox();
-        }, 5000);
+        }, 15000);
     }
 
     // Poll inbox if no active chat
     setInterval(function() {
         if (!activeUserId) loadInbox();
-    }, 10000); 
+    }, 15000); 
 });
 </script>
 {% endblock js %}

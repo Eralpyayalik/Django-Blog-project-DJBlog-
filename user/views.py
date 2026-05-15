@@ -193,6 +193,19 @@ def chat_detail(request, user_id):
                 notification_type='message',
                 text=f"{request.user.username} size bir mesaj gönderdi."
             )
+            
+            # WebSocket Broadcast
+            from channels.layers import get_channel_layer
+            from asgiref.sync import async_to_sync
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                f'user_{other_user.id}',
+                {
+                    'type': 'chat_message',
+                    'sender_id': request.user.id
+                }
+            )
+            
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                 return JsonResponse({'status': 'success', 'body': msg.body, 'time': msg.created_at.strftime("%H:%M")})
             return redirect('user:chat_detail', user_id=user_id)
