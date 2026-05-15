@@ -165,18 +165,11 @@ def updateArticle(request, slug):
         messages.error(request, "Bu makaleyi güncellemeye yetkiniz yok!")
         return redirect("article:dashboard")
 
-    old_image_path = article.article_image.path if article.article_image else None
-
     form = ArticleForm(request.POST or None, request.FILES or None, instance=article)
 
     if form.is_valid():
         updated_article = form.save(commit=False)
         updated_article.author = request.user
-        
-        if 'article_image' in request.FILES and old_image_path:
-            if os.path.exists(old_image_path):
-                os.remove(old_image_path)
-        
         updated_article.save()
 
         messages.success(request, "Makale başarıyla güncellendi.")
