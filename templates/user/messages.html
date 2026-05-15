@@ -64,6 +64,8 @@
         overflow-y: auto;
         padding: 20px;
         background: #fafafa;
+        display: flex;
+        flex-direction: column;
     }
 
     .msg-bubble-modern {
@@ -136,7 +138,6 @@
         color: #adb5bd;
     }
     
-    /* Scrollbar styling */
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-thumb { background: #dee2e6; border-radius: 10px; }
 </style>
@@ -159,7 +160,6 @@
 
         <!-- Chat Area -->
         <div class="col-md-8 col-lg-9 chat-panel">
-            <!-- Header (Hidden when no chat active) -->
             <div class="panel-header shadow-sm z-1" id="chat-header" style="display: none;">
                 <div class="d-flex align-items-center gap-3">
                     <div class="position-relative">
@@ -177,18 +177,15 @@
                 </div>
             </div>
 
-            <!-- Empty State -->
             <div id="chat-empty-state" class="chat-empty-state">
                 <i class="far fa-comments fa-4x mb-3 opacity-50"></i>
                 <h5>Sohbet başlatmak için bir kişi seçin</h5>
                 <p class="small">Sol taraftaki listeden bir konuşmaya tıklayın.</p>
             </div>
 
-            <!-- Messages Area -->
-            <div class="chat-scroll-area d-flex flex-column" id="chat-messages" style="display: none !important;">
+            <div class="chat-scroll-area" id="chat-messages" style="display: none !important;">
             </div>
 
-            <!-- Footer / Input form -->
             <div class="chat-footer z-1" id="chat-footer" style="display: none;">
                 <form id="chat-form">
                     <input type="hidden" id="chat-receiver-id">
@@ -207,49 +204,69 @@
 
 {% block js %}
 <script>
-// Global variables
-const notificationSound = new Audio('notification.mp3');
+// Global Ses Nesnesi (Google Bildirim Sesi - Daha güvenilir URL)
+const notificationSound = new Audio("https://actions.google.com/sounds/v1/communications/incoming_call_ringtone.ogg");
 notificationSound.volume = 0.5;
 
 $(document).ready(function() {
     let activeUserId = null;
     let chatInterval = null;
-    const currentUserId = "{{ request.user.id }}";
+    const currentUserId = parseInt("{{ request.user.id }}");
     
     // WebSocket Setup
     const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
-    const chatSocket = new WebSocket(wsScheme + "://" + window.location.host + "/ws/chat/");
+    const wsUrl = wsScheme + "://" + window.location.host + "/ws/chat/";
+    console.log("WebSocket connecting to:", wsUrl);
+    
+    let chatSocket = new WebSocket(wsUrl);
     
     let typingDebounceTimer;
     let isCurrentlyTyping = false;
 
+    // WebSocket Eventleri
+    chatSocket.onopen = function() { console.log("WebSocket connected successfully!"); };
+    chatSocket.onerror = function(e) { console.error("WebSocket error:", e); };
+    chatSocket.onclose = function() { 
+        console.warn("WebSocket closed. Reconnecting in 5s..."); 
+        setTimeout(() => { location.reload(); }, 5000); 
+    };
+
     chatSocket.onmessage = function(e) {
         const data = JSON.parse(e.data);
+        console.log("WebSocket message received:", data);
         
-        // Typing Status Handler
-        if (data.type === 'typing_status' && data.sender_id == activeUserId) {
+        // 3) "... Yazıyor" Geri Bildirimi
+        if (data.type === 'typing_status' && parseInt(data.sender_id) === parseInt(activeUserId)) {
             if (data.is_typing) {
-                $("#chat-typing-status").show();
+                $("#chat-typing-status").fadeIn(100);
             } else {
-                $("#chat-typing-status").hide();
+                $("#chat-typing-status").fadeOut(100);
             }
         } 
-        // New Message Handler
+        // Yeni Mesaj ve 2) Sesli Bildirim
         else if (data.type === 'new_message') {
-            if (data.sender_id != currentUserId) {
-                notificationSound.play().catch(e => console.log(e));
+            if (parseInt(data.sender_id) !== currentUserId) {
+                console.log("Playing notification sound...");
+                notificationSound.play().catch(err => console.warn("Sound play failed:", err));
             }
             loadInbox();
-            if (data.sender_id == activeUserId) {
+            if (parseInt(data.sender_id) === parseInt(activeUserId)) {
                 loadChatHistory(activeUserId, true);
             }
         }
     };
 
+    // 1) Otomatik Aşağı Kaydırma Fonksiyonu
     function scrollToBottom() {
         const chatArea = document.getElementById("chat-messages");
         if (chatArea) {
-            chatArea.scrollTop = chatArea.scrollHeight;
+            // Animasyonlu ve garantili kaydırma
+            setTimeout(() => {
+                chatArea.scrollTo({
+                    top: chatArea.scrollHeight,
+                    behavior: 'smooth'
+                });
+            }, 150);
         }
     }
 
@@ -261,7 +278,6 @@ $(document).ready(function() {
         return initials.toUpperCase();
     }
 
-    // Load Inbox list
     function loadInbox() {
         $.ajax({
             url: "{% url 'user:inbox' %}",
@@ -271,7 +287,7 @@ $(document).ready(function() {
                 if (data.conversations && data.conversations.length > 0) {
                     data.conversations.forEach(function(c) {
                         let badge = c.unread > 0 ? `<span class="badge bg-primary rounded-pill">${c.unread}</span>` : "";
-                        let isActive = activeUserId == c.user_id ? "active" : "";
+                        let isActive = parseInt(activeUserId) === parseInt(c.user_id) ? "active" : "";
                         let showAvatar = (c.avatar && c.avatar.indexOf("default") === -1) ? true : false;
                         
                         html += `
@@ -302,7 +318,6 @@ $(document).ready(function() {
         });
     }
 
-    // Load chat detail
     function loadChatHistory(userId, shouldScroll = false) {
         if (!userId) return;
         $.ajax({
@@ -353,13 +368,12 @@ $(document).ready(function() {
         });
     }
 
-    // Handle inbox item click
     $(document).on("click", ".inbox-item", function() {
         $(".inbox-item").removeClass("active");
         $(this).addClass("active");
         
         let userId = $(this).attr("data-user-id");
-        if (userId === currentUserId) return;
+        if (parseInt(userId) === currentUserId) return;
         
         activeUserId = userId;
         $("#chat-receiver-id").val(userId);
@@ -378,7 +392,7 @@ $(document).ready(function() {
         }, 15000);
     });
 
-    // Typing Feedback with Debounce
+    // 3) "... Yazıyor" (Debounce ile)
     $("#chat-input").on("input", function() {
         if (!activeUserId || chatSocket.readyState !== WebSocket.OPEN) return;
 
@@ -402,7 +416,6 @@ $(document).ready(function() {
         }, 1500);
     });
 
-    // Handle message send
     $("#chat-form").on("submit", function(e) {
         e.preventDefault();
         let userId = $("#chat-receiver-id").val();
@@ -418,10 +431,10 @@ $(document).ready(function() {
             headers: { "X-Requested-With": "XMLHttpRequest" },
             success: function() {
                 messageInput.val("");
-                loadChatHistory(userId, true);
+                loadChatHistory(userId, true); // 1) Otomatik Aşağı Kaydırma
                 loadInbox();
                 
-                // Immediately stop typing indicator on send
+                // Mesaj gidince yazıyor bilgisini hemen kes
                 clearTimeout(typingDebounceTimer);
                 isCurrentlyTyping = false;
                 chatSocket.send(JSON.stringify({
@@ -433,13 +446,12 @@ $(document).ready(function() {
         });
     });
 
-    // Initialize
     loadInbox();
     
     // URL Param check
     const urlParams = new URLSearchParams(window.location.search);
     const targetUserId = urlParams.get('user_id');
-    if (targetUserId && targetUserId !== currentUserId) {
+    if (targetUserId && parseInt(targetUserId) !== currentUserId) {
         activeUserId = targetUserId;
         $("#chat-receiver-id").val(targetUserId);
         $("#chat-empty-state").hide();
@@ -454,9 +466,7 @@ $(document).ready(function() {
         }, 15000);
     }
 
-    setInterval(function() {
-        if (!activeUserId) loadInbox();
-    }, 15000); 
+    setInterval(function() { if (!activeUserId) loadInbox(); }, 15000); 
 });
 </script>
 {% endblock js %}
