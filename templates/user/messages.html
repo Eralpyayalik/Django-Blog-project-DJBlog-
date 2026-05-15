@@ -207,31 +207,38 @@
 
 {% block js %}
 <script>
+// Global variables
+const notificationSound = new Audio('notification.mp3');
+notificationSound.volume = 0.5;
+
 $(document).ready(function() {
     let activeUserId = null;
     let chatInterval = null;
     const currentUserId = "{{ request.user.id }}";
     
-    // Notification Sound
-    const notificationSound = new Audio("https://actions.google.com/sounds/v1/communications/incoming_call_ringtone.ogg");
-    notificationSound.volume = 0.5;
-    
-    // WebSocket
+    // WebSocket Setup
     const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
     const chatSocket = new WebSocket(wsScheme + "://" + window.location.host + "/ws/chat/");
     
-    let typingTimer;
+    let typingDebounceTimer;
+    let isCurrentlyTyping = false;
 
     chatSocket.onmessage = function(e) {
         const data = JSON.parse(e.data);
-        if (data.type === 'typing' && data.sender_id == activeUserId) {
-            $("#chat-typing-status").show();
-            clearTimeout(typingTimer);
-            typingTimer = setTimeout(() => {
+        
+        // Typing Status Handler
+        if (data.type === 'typing_status' && data.sender_id == activeUserId) {
+            if (data.is_typing) {
+                $("#chat-typing-status").show();
+            } else {
                 $("#chat-typing-status").hide();
-            }, 1500);
-        } else if (data.type === 'new_message') {
-            notificationSound.play().catch(e => console.log("Sound play error:", e));
+            }
+        } 
+        // New Message Handler
+        else if (data.type === 'new_message') {
+            if (data.sender_id != currentUserId) {
+                notificationSound.play().catch(e => console.log(e));
+            }
             loadInbox();
             if (data.sender_id == activeUserId) {
                 loadChatHistory(activeUserId, true);
@@ -239,7 +246,13 @@ $(document).ready(function() {
         }
     };
 
-    
+    function scrollToBottom() {
+        const chatArea = document.getElementById("chat-messages");
+        if (chatArea) {
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+    }
+
     function getInitials(name) {
         if (!name) return "??";
         let parts = name.trim().split(" ");
@@ -290,7 +303,7 @@ $(document).ready(function() {
     }
 
     // Load chat detail
-    function loadChatHistory(userId, scrollToBottom = false) {
+    function loadChatHistory(userId, shouldScroll = false) {
         if (!userId) return;
         $.ajax({
             url: "/user/chat/" + userId + "/",
@@ -333,13 +346,8 @@ $(document).ready(function() {
                     }
                 }
                 
-                if (scrollToBottom) {
-                    let chatArea = $("#chat-messages");
-                    if (chatArea.length) {
-                        setTimeout(() => {
-                            chatArea.scrollTop(chatArea[0].scrollHeight);
-                        }, 100);
-                    }
+                if (shouldScroll) {
+                    scrollToBottom();
                 }
             }
         });
@@ -363,21 +371,35 @@ $(document).ready(function() {
         
         loadChatHistory(userId, true);
         
-        // Start polling for this specific chat
         if (chatInterval) clearInterval(chatInterval);
         chatInterval = setInterval(function() {
             loadChatHistory(activeUserId, false);
             loadInbox();
-        }, 15000); // Poll every 15 seconds as a fallback, websockets handle real-time
+        }, 15000);
     });
 
+    // Typing Feedback with Debounce
     $("#chat-input").on("input", function() {
-        if (chatSocket.readyState === WebSocket.OPEN && activeUserId) {
+        if (!activeUserId || chatSocket.readyState !== WebSocket.OPEN) return;
+
+        if (!isCurrentlyTyping) {
+            isCurrentlyTyping = true;
             chatSocket.send(JSON.stringify({
-                'action': 'typing',
+                'type': 'typing_status',
+                'is_typing': true,
                 'receiver_id': activeUserId
             }));
         }
+
+        clearTimeout(typingDebounceTimer);
+        typingDebounceTimer = setTimeout(() => {
+            isCurrentlyTyping = false;
+            chatSocket.send(JSON.stringify({
+                'type': 'typing_status',
+                'is_typing': false,
+                'receiver_id': activeUserId
+            }));
+        }, 1500);
     });
 
     // Handle message send
@@ -398,6 +420,15 @@ $(document).ready(function() {
                 messageInput.val("");
                 loadChatHistory(userId, true);
                 loadInbox();
+                
+                // Immediately stop typing indicator on send
+                clearTimeout(typingDebounceTimer);
+                isCurrentlyTyping = false;
+                chatSocket.send(JSON.stringify({
+                    'type': 'typing_status',
+                    'is_typing': false,
+                    'receiver_id': userId
+                }));
             }
         });
     });
@@ -405,7 +436,7 @@ $(document).ready(function() {
     // Initialize
     loadInbox();
     
-    // URL Param check (to open specific chat)
+    // URL Param check
     const urlParams = new URLSearchParams(window.location.search);
     const targetUserId = urlParams.get('user_id');
     if (targetUserId && targetUserId !== currentUserId) {
@@ -423,7 +454,6 @@ $(document).ready(function() {
         }, 15000);
     }
 
-    // Poll inbox if no active chat
     setInterval(function() {
         if (!activeUserId) loadInbox();
     }, 15000); 

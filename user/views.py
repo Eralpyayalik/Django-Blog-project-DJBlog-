@@ -201,7 +201,7 @@ def chat_detail(request, user_id):
             async_to_sync(channel_layer.group_send)(
                 f'user_{other_user.id}',
                 {
-                    'type': 'chat_message',
+                    'type': 'new_message_notification',
                     'sender_id': request.user.id
                 }
             )
