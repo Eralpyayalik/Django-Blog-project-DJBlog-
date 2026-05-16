@@ -150,6 +150,9 @@ if CLOUDINARY_CLOUD_NAME:
         'API_KEY': os.environ.get('CLOUDINARY_API_KEY', ''),
         'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', '')
     }
+    # Eski kütüphane uyumluluğu için (AttributeError engelleme)
+    STATICFILES_STORAGE = "cloudinary_storage.storage.StaticCloudinaryStorage"
+    DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 else:
     # Lokal Geliştirme
     STORAGES = {
