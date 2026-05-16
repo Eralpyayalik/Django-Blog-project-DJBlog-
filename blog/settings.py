@@ -130,7 +130,7 @@ CLOUDINARY_STORAGE = {
     'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', '')
 }
 
-# ── STORAGES SÖZLÜĞÜ (KESİN AYARLAR) ──
+# ── STORAGES SÖZLÜĞÜ (GÜVENLİ AYARLAR) ──
 if os.environ.get('CLOUDINARY_CLOUD_NAME'):
     # Üretim (Railway)
     STORAGES = {
@@ -138,7 +138,8 @@ if os.environ.get('CLOUDINARY_CLOUD_NAME'):
             "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
         },
         "staticfiles": {
-            "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+            # Sorunlu sıkıştırma yerine en güvenli olan düz statik sunumu
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
         },
     }
 else:
@@ -172,8 +173,9 @@ CKEDITOR_CONFIGS = {
     },
 }
 
-# ── WHITENOISE VE CLOUDINARY HATA GİDERME (EN ALT) ──
+# ── HATA GİDERME (EN ALT) ──
 WHITENOISE_MANIFEST_STRICT = False
 WHITENOISE_KEEP_ONLY_HASHED_FILES = False
-STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
+# Burayı da düz storage'a çekiyoruz ki WhiteNoise'ın sıkıştırma motoru devreye girmesin
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
 DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
