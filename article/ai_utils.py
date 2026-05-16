@@ -13,7 +13,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Gemini Yapılandırması
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+genai.configure(api_key=api_key)
 
 def get_unsplash_image(query):
     """Unsplash API kullanarak konuya uygun görsel URL'si döner."""
