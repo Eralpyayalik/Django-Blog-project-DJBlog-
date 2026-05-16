@@ -280,6 +280,42 @@
                 });
             });
         }
+
+        // AJAX Comment Delete Functionality
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.delete-comment-btn')) {
+                const btn = e.target.closest('.delete-comment-btn');
+                if (!confirm('Bu yorumu silmek istediğinize emin misiniz?')) return;
+                
+                const url = btn.getAttribute('data-url');
+                const commentCard = btn.closest('.card');
+                
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrftoken,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        // Yorumu süzülerek kaldır
+                        commentCard.style.transition = 'all 0.4s';
+                        commentCard.style.opacity = '0';
+                        commentCard.style.transform = 'translateX(20px)';
+                        setTimeout(() => {
+                            commentCard.remove();
+                        }, 400);
+                    } else {
+                        alert(data.message || 'Bir hata oluştu.');
+                    }
+                })
+                .catch(err => {
+                    console.error('Silme hatası:', err);
+                });
+            }
+        });
     });
 </script>
 <script src="{% static 'js/filter.js' %}"></script>

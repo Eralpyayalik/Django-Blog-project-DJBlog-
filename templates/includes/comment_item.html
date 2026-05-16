@@ -69,9 +69,9 @@
 
                     {% if request.user.is_authenticated %}
                         {% if comment.user == request.user or article_author == request.user.username %}
-                        <a href="{% url 'article:delete_comment' comment.id %}" class="btn btn-light btn-sm text-danger text-decoration-none d-flex align-items-center gap-2 rounded-pill px-3 shadow-sm border" style="font-size: 0.85rem; transition: all 0.2s;" onclick="return confirm('Bu yorumu silmek istediğinize emin misiniz?')">
+                        <button type="button" data-url="{% url 'article:delete_comment' comment.id %}" class="btn btn-light btn-sm text-danger text-decoration-none d-flex align-items-center gap-2 rounded-pill px-3 shadow-sm border delete-comment-btn" style="font-size: 0.85rem; transition: all 0.2s;">
                             <i class="fas fa-trash-alt"></i> Sil
-                        </a>
+                        </button>
                         {% endif %}
                     {% endif %}
                     

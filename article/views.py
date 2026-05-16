@@ -359,8 +359,12 @@ def deleteComment(request, id):
     # Sadece yorum sahibi veya makale sahibi silebilir
     if comment.user == request.user or comment.article.author == request.user:
         comment.delete()
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'status': 'success', 'message': 'Yorum silindi.'})
         messages.success(request, "Yorum başarıyla silindi.")
     else:
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'status': 'error', 'message': 'Yetkisiz işlem!'}, status=43)
         messages.error(request, "Bu yorumu silme yetkiniz yok!")
         
     return redirect('article:detail', slug=article_slug)
