@@ -35,31 +35,23 @@ def get_unsplash_image(query):
 def generate_ai_interaction(article=None):
     """Rastgele bir AI kullanıcısının bir makaleyi beğenmesini veya yorum yapmasını sağlar."""
     ai_usernames = ['Melis_Arkan', 'Caner_Yildiz', 'Selin_Yilmaz']
-    
     if not article:
         article = Article.objects.order_by('?').first()
-    
     if not article:
         return "Makale bulunamadı."
 
-    # Yazarı hariç tutarak bir etkileşimci seç
     interactor_name = random.choice([u for u in ai_usernames if u != article.author.username])
     interactor = User.objects.get(username=interactor_name)
-    
     choice = random.choice(['LIKE', 'COMMENT', 'BOTH'])
-    
     result_msg = f"{interactor.username} -> "
     
-    # Beğeni Ekle
     if choice in ['LIKE', 'BOTH']:
         article.likes.add(interactor)
         result_msg += "Beğendi. "
         
-    # Yorum Ekle
     if choice in ['COMMENT', 'BOTH']:
         model = genai.GenerativeModel('gemini-flash-latest')
-        prompt = f"Sen {interactor.username} isimli blog yazarıyısın. Arkadaşın {article.author.username}'ın '{article.title}' başlıklı yazısını okudun. Bu yazıya Türkçe, samimi, kısa ve mantıklı bir yorum yap. Sadece yorum metnini döndür."
-        
+        prompt = f"Sen {interactor.username} isimli, teknoloji, YouTube ve oyun dünyasını yakından takip eden birisin. Arkadaşın {article.author.username}'ın '{article.title}' başlıklı yazısını okudun. Samimi, güncel ve biraz 'sosyal medya' lisanıyla yorum yap. Sadece yorumu döndür."
         try:
             response = model.generate_content(prompt)
             comment_text = response.text.strip().replace('"', '')
@@ -69,49 +61,49 @@ def generate_ai_interaction(article=None):
                 comment_author=f"{interactor.first_name} {interactor.last_name}",
                 comment_content=comment_text
             )
-            result_msg += f"Yorum yaptı: {comment_text[:30]}..."
+            result_msg += f"Yorum yaptı."
         except:
-            result_msg += "Yorum yaparken hata oluştu."
-            
+            result_msg += "Hata."
     return result_msg
 
 def generate_ai_article():
-    # 1. Yazarı Rastgele Seç
     ai_usernames = ['Melis_Arkan', 'Caner_Yildiz', 'Selin_Yilmaz']
     authors = User.objects.filter(username__in=ai_usernames)
-    if not authors.exists():
-        return "Hata: AI yazarları bulunamadı."
-    
+    if not authors.exists(): return "Hata: AI yazarları bulunamadı."
     author = random.choice(authors)
     
-    # 2. Konu Seçimi
+    # 2. KONU HAVUZU (Donanım, Oyun, YouTube, Yayıncılık, İnceleme)
     topics = [
-        "Yapay Zekanın Günlük Hayattaki Etkileri", 
-        "Modern Web Tasarımında Renk Psikolojisi", 
-        "Minimalist Çalışma Alanı Nasıl Kurulur?",
-        "Sürdürülebilir Bir Gelecek İçin 5 Adım",
-        "2026'da Yazılım Dünyasını Neler Bekliyor?",
-        "Dijital Detoks: Neden İhtiyacımız Var?",
-        "E-ticaretin Geleceği ve Web3 Teknolojileri",
-        "Kendi Kendine Öğrenme (Self-Learning) Sanatı",
-        "Yazılımcılar İçin Sağlıklı Yaşam İpuçları",
-        "Geleceğin Akıllı Şehirleri"
+        "RTX 5090 Sızıntıları: Donanım Dünyası Sallanıyor", 
+        "2026'da İzlenmesi Gereken En İyi YouTube Kanalları", 
+        "Twitch'in Yeni Yayıncı Politikası: Kimler Kazanacak?",
+        "GTA 6 Fragman Analizi: Kaçırdığınız Detaylar",
+        "En İyi Fiyat/Performans Oyuncu Kulaklıkları (2026)",
+        "MrBeast'in Yeni Projesi ve YouTube'un Geleceği",
+        "PlayStation 6 Hakkında Bildiğimiz Her Şey",
+        "Neden Herkes Bir Anda Yayıncı Olmak İstiyor?",
+        "Yapay Zeka ile Video Montajı Yapmanın Kolay Yolları",
+        "Valorant ve LoL Dünyasındaki Yeni Güncellemeler",
+        "Akıllı Telefonlarda 2026 Trendleri: Katlanabilirler Devri",
+        "Discord'un Yeni Özellikleri ve Topluluk Yönetimi"
     ]
     topic = random.choice(topics)
     
-    # 3. Gemini ile İçerik Üretme
     model = genai.GenerativeModel('gemini-flash-latest')
-    ALLOWED_CATEGORIES = ["Teknoloji", "Yazılım", "Yaşam", "Gezi", "Genel"]
+    ALLOWED_CATEGORIES = ["Teknoloji", "Yazılım", "Oyun", "İnceleme", "Yayıncılık"]
     
     prompt = f"""
-    Sen profesyonel bir blog yazarı olan {author.username} karakterisin. 
-    Lütfen '{topic}' konusu üzerine Türkçe, ilgi çekici, bilgilendirici ve samimi bir blog yazısı yaz.
-    KURALLAR:
-    1. KATEGORİ sadece şu listeden biri olmalıdır: {', '.join(ALLOWED_CATEGORIES)}.
-    2. Yazı formatı:
-       BAŞLIK: [Başlık]
-       İÇERİK: [HTML İçerik]
-       KATEGORİ: [Kategori]
+    Sen {author.username} isimli, YouTube, Twitch ve teknoloji dünyasını çok iyi bilen bir içerik üreticisisin.
+    Konu: '{topic}'
+    
+    TALİMATLAR:
+    - Dilin samimi, akıcı ve 'genç' olsun. 
+    - YouTube trendlerinden, yayıncı dünyasından ve yeni ürünlerden bahset.
+    - KATEGORİ sadece şunlardan biri olabilir: {', '.join(ALLOWED_CATEGORIES)}.
+    - Yazı Formatı:
+      BAŞLIK: [Başlık]
+      İÇERİK: [HTML Formatında, en az 400 kelime, detaylı ve güncel bilgiler içeren içerik]
+      KATEGORİ: [Seçilen Kategori]
     """
     
     try:
@@ -124,27 +116,22 @@ def generate_ai_article():
         content = text.split("İÇERİK:")[1].split("KATEGORİ:")[0].strip()
         raw_category = text.split("KATEGORİ:")[1].replace("*", "").strip()
         
-        category_name = "Genel"
+        category_name = "Teknoloji"
         for cat in ALLOWED_CATEGORIES:
             if cat.lower() in raw_category.lower():
                 category_name = cat
                 break
         category, _ = Category.objects.get_or_create(name=category_name)
         
-        # 5. Görsel Seçimi
         image_url = get_unsplash_image(slugify(topic))
-        
-        # 6. Makaleyi Oluştur
         article = Article(author=author, title=title, content=content, category=category)
         img_response = requests.get(image_url)
         if img_response.status_code == 200:
             article.article_image.save(f"{slugify(title)}.jpg", ContentFile(img_response.content), save=False)
         article.save()
         
-        # 7. OTOMATİK ETKİLEŞİM: Diğer AI kullanıcıları beğensin/yorum yapsın
         generate_ai_interaction(article)
-        
-        return f"Başarılı: '{title}' paylaşıldı ve etkileşim aldı."
+        return f"Başarılı: '{title}' (Yayıncılık/Teknoloji odaklı) paylaşıldı."
         
     except Exception as e:
-        return f"Hata oluştu: {str(e)}"
+        return f"Hata: {str(e)}"
