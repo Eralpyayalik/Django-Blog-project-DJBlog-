@@ -51,7 +51,7 @@ def generate_ai_interaction(article=None):
         
     if choice in ['COMMENT', 'BOTH']:
         model = genai.GenerativeModel('gemini-flash-latest')
-        prompt = f"Sen {interactor.username} isimli, teknoloji, YouTube ve oyun dünyasını yakından takip eden birisin. Arkadaşın {article.author.username}'ın '{article.title}' başlıklı yazısını okudun. Samimi, güncel ve biraz 'sosyal medya' lisanıyla yorum yap. Sadece yorumu döndür."
+        prompt = f"Sen {interactor.username} isimli, teknoloji ve yayıncı dünyasını takip eden birisin. Arkadaşın {article.author.username}'ın '{article.title}' başlıklı yazısına samimi, kısa bir yorum yap. Sadece yorumu döndür."
         try:
             response = model.generate_content(prompt)
             comment_text = response.text.strip().replace('"', '')
@@ -72,38 +72,36 @@ def generate_ai_article():
     if not authors.exists(): return "Hata: AI yazarları bulunamadı."
     author = random.choice(authors)
     
-    # 2. KONU HAVUZU (Donanım, Oyun, YouTube, Yayıncılık, İnceleme)
     topics = [
-        "RTX 5090 Sızıntıları: Donanım Dünyası Sallanıyor", 
-        "2026'da İzlenmesi Gereken En İyi YouTube Kanalları", 
-        "Twitch'in Yeni Yayıncı Politikası: Kimler Kazanacak?",
-        "GTA 6 Fragman Analizi: Kaçırdığınız Detaylar",
-        "En İyi Fiyat/Performans Oyuncu Kulaklıkları (2026)",
-        "MrBeast'in Yeni Projesi ve YouTube'un Geleceği",
-        "PlayStation 6 Hakkında Bildiğimiz Her Şey",
-        "Neden Herkes Bir Anda Yayıncı Olmak İstiyor?",
-        "Yapay Zeka ile Video Montajı Yapmanın Kolay Yolları",
-        "Valorant ve LoL Dünyasındaki Yeni Güncellemeler",
-        "Akıllı Telefonlarda 2026 Trendleri: Katlanabilirler Devri",
-        "Discord'un Yeni Özellikleri ve Topluluk Yönetimi"
+        "RTX 5090 Sızıntıları ve Performans Beklentileri", 
+        "2026'da İzlenmesi Gereken YouTuber'lar", 
+        "Twitch vs YouTube: Yayıncılar Nereye Gidiyor?",
+        "GTA 6'dan Yeni Detaylar: Harita ve Karakterler",
+        "En İyi Oyuncu Mouse'ları: Ürün İncelemesi",
+        "PlayStation 6 Hakkındaki Son Söylentiler",
+        "Yazılımcılar İçin En İyi Laptoplar (2026)",
+        "Yeni Nesil Akıllı Gözlükler ve VR Dünyası",
+        "Mobil Oyun Dünyasındaki Devrim: Yeni AAA Oyunlar",
+        "E-Spor Arenasında Bu Hafta Neler Oldu?"
     ]
     topic = random.choice(topics)
     
     model = genai.GenerativeModel('gemini-flash-latest')
-    ALLOWED_CATEGORIES = ["Teknoloji", "Yazılım", "Oyun", "İnceleme", "Yayıncılık"]
+    
+    # KESİN VE NET KATEGORİ LİSTESİ
+    ALLOWED_CATEGORIES = ["Teknoloji", "Yazılım", "Oyun", "Ürün İnceleme", "Yayıncılık"]
     
     prompt = f"""
-    Sen {author.username} isimli, YouTube, Twitch ve teknoloji dünyasını çok iyi bilen bir içerik üreticisisin.
+    Sen {author.username} isimli bir teknoloji içerik üreticisisin.
     Konu: '{topic}'
     
-    TALİMATLAR:
-    - Dilin samimi, akıcı ve 'genç' olsun. 
-    - YouTube trendlerinden, yayıncı dünyasından ve yeni ürünlerden bahset.
-    - KATEGORİ sadece şunlardan biri olabilir: {', '.join(ALLOWED_CATEGORIES)}.
-    - Yazı Formatı:
-      BAŞLIK: [Başlık]
-      İÇERİK: [HTML Formatında, en az 400 kelime, detaylı ve güncel bilgiler içeren içerik]
-      KATEGORİ: [Seçilen Kategori]
+    KURALLAR:
+    1. KATEGORİ mutlaka şu listeden biri olmalıdır: {', '.join(ALLOWED_CATEGORIES)}.
+    2. Sakın 'İnceleme' veya başka bir isim kullanma, eğer ürün inceliyorsan tam olarak 'Ürün İnceleme' yaz.
+    3. Yazı Formatı:
+       BAŞLIK: [Başlık]
+       İÇERİK: [HTML İçerik]
+       KATEGORİ: [Seçilen Kategori]
     """
     
     try:
@@ -116,11 +114,25 @@ def generate_ai_article():
         content = text.split("İÇERİK:")[1].split("KATEGORİ:")[0].strip()
         raw_category = text.split("KATEGORİ:")[1].replace("*", "").strip()
         
-        category_name = "Teknoloji"
-        for cat in ALLOWED_CATEGORIES:
-            if cat.lower() in raw_category.lower():
-                category_name = cat
-                break
+        # AKILLI EŞLEŞTİRME (Mapping)
+        category_name = "Teknoloji" # Varsayılan
+        
+        # Eğer AI 'İnceleme' falan derse onu 'Ürün İnceleme'ye çek
+        if "inceleme" in raw_category.lower():
+            category_name = "Ürün İnceleme"
+        elif "oyun" in raw_category.lower():
+            category_name = "Oyun"
+        elif "yazılım" in raw_category.lower() or "kod" in raw_category.lower():
+            category_name = "Yazılım"
+        elif "yayın" in raw_category.lower() or "youtube" in raw_category.lower() or "twitch" in raw_category.lower():
+            category_name = "Yayıncılık"
+        elif "tekno" in raw_category.lower():
+            category_name = "Teknoloji"
+            
+        # Son bir kontrol: Eğer hala listede yoksa zorla listeden birini seç
+        if category_name not in ALLOWED_CATEGORIES:
+            category_name = random.choice(ALLOWED_CATEGORIES)
+
         category, _ = Category.objects.get_or_create(name=category_name)
         
         image_url = get_unsplash_image(slugify(topic))
@@ -131,7 +143,7 @@ def generate_ai_article():
         article.save()
         
         generate_ai_interaction(article)
-        return f"Başarılı: '{title}' (Yayıncılık/Teknoloji odaklı) paylaşıldı."
+        return f"Başarılı: '{title}' ({category_name} kategorisinde) paylaşıldı."
         
     except Exception as e:
         return f"Hata: {str(e)}"
