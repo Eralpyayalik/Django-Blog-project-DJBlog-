@@ -188,13 +188,23 @@ def chat_detail(request, user_id):
         body = request.POST.get('body')
         if body:
             msg = Message.objects.create(sender=request.user, receiver=other_user, body=body)
-            Notification.objects.create(
-                user=other_user,
-                sender=request.user,
-                notification_type='message',
-                text=f"{request.user.username} size bir mesaj gönderdi.",
-                target_url=reverse('user:chat_detail', kwargs={'user_id': request.user.id})
-            )
+            # BİLDİRİM KİRLİLİĞİNİ ÖNLEME:
+            # Eğer bu göndericiden zaten okunmamış bir mesaj bildirimi varsa yenisini oluşturma
+            has_unread_notif = Notification.objects.filter(
+                user=other_user, 
+                sender=request.user, 
+                notification_type='message', 
+                is_read=False
+            ).exists()
+
+            if not has_unread_notif:
+                Notification.objects.create(
+                    user=other_user,
+                    sender=request.user,
+                    notification_type='message',
+                    text=f"{request.user.username} size bir mesaj gönderdi.",
+                    target_url=reverse('user:chat_detail', kwargs={'user_id': request.user.id})
+                )
             
             # WebSocket Broadcast (Hata yönetimi ile)
             try:
