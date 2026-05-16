@@ -14,4 +14,5 @@ urlpatterns = [
     path("like/<int:id>/", views.like_article, name="like_article"),
     path('comment/like/<int:id>/', views.likeComment, name="like_comment"),
     path('comment/delete/<int:id>/', views.deleteComment, name="delete_comment"),
+    path('generate-ai-post/', views.trigger_ai_post, name="trigger_ai_post"),
     ]

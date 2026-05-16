@@ -4,9 +4,10 @@ from django.db.models import Count
 from article.models import Article,Comment,Category
 from.forms import ArticleForm
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.db.models import Count, Sum
 from django.template.loader import render_to_string
+from .ai_utils import generate_ai_article
 import os
 from django.contrib.auth.models import User
 from user.models import Notification
@@ -371,5 +372,23 @@ def deleteComment(request, id):
             return JsonResponse({'status': 'error', 'message': 'Yetkisiz işlem!'}, status=43)
         messages.error(request, "Bu yorumu silme yetkiniz yok!")
         
-    return redirect('article:detail', slug=article_slug)
+@login_required(login_url="user:login")
+def trigger_ai_post(request):
+    # Sadece süper kullanıcı (sen) tetikleyebilsin
+    if not request.user.is_superuser:
+        return HttpResponse("Yetkisiz erişim!", status=43)
+        
+    from django.core.management import call_command
+    # Önce yazarların olduğundan emin ol (varsa oluşturmaz zaten)
+    call_command('create_ai_users')
+    
+    # Makaleyi üret
+    result = generate_ai_article()
+    
+    if "Başarılı" in result:
+        messages.success(request, result)
+    else:
+        messages.error(request, result)
+        
+    return redirect('article:dashboard')
     
