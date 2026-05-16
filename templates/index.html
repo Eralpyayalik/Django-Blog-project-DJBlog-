@@ -383,7 +383,7 @@
 
     <!-- Category Filter Bar -->
     <div class="category-scroll">
-        <a href="{% url 'article:index' %}" class="cat-pill active"><i class="fas fa-globe me-2"></i>Tümü</a>
+        <a href="{% url 'index' %}" class="cat-pill active"><i class="fas fa-globe me-2"></i>Tümü</a>
         {% for cat in categories %}
             <a href="{% url 'article:articles' %}?category={{ cat.slug }}" class="cat-pill">{{ cat.name }}</a>
         {% endfor %}
