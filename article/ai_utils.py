@@ -59,13 +59,18 @@ def generate_ai_article():
     # 3. Gemini ile İçerik Üretme
     model = genai.GenerativeModel('gemini-flash-latest')
     
+    ALLOWED_CATEGORIES = ["Teknoloji", "Yazılım", "Yaşam", "Gezi", "Genel"]
+    
     prompt = f"""
     Sen profesyonel bir blog yazarı olan {author.username} karakterisin. 
     Lütfen '{topic}' konusu üzerine Türkçe, ilgi çekici, bilgilendirici ve samimi bir blog yazısı yaz.
-    Yazı şu formatta olsun:
-    BAŞLIK: [Buraya etkileyici bir başlık]
-    İÇERİK: [Buraya en az 400 kelimelik, HTML formatında (p, h2, ul, li etiketleri kullanarak) zengin bir içerik]
-    KATEGORİ: [Teknoloji, Yaşam, Yazılım, Gezi kategorilerinden birini seç]
+    
+    KURALLAR:
+    1. KATEGORİ sadece şu listeden biri olmalıdır: {', '.join(ALLOWED_CATEGORIES)}. Başka kategori uydurma.
+    2. Yazı formatı şu şekilde olmalıdır:
+       BAŞLIK: [Başlık]
+       İÇERİK: [HTML Formatında İçerik]
+       KATEGORİ: [Yukarıdaki listeden seçilen kategori]
     """
     
     try:
@@ -73,19 +78,21 @@ def generate_ai_article():
         text = response.text
         
         # Parse Title, Content and Category
-        # Bazı durumlarda AI formatı bozabilir, basit bir kontrol ekleyelim
         if "BAŞLIK:" not in text or "İÇERİK:" not in text or "KATEGORİ:" not in text:
-            return f"Hata: AI beklenmedik bir format döndürdü. \nİçerik: {text[:100]}..."
+            return f"Hata: AI formatı bozdu."
 
         title = text.split("BAŞLIK:")[1].split("İÇERİK:")[0].strip()
         content = text.split("İÇERİK:")[1].split("KATEGORİ:")[0].strip()
-        category_name = text.split("KATEGORİ:")[1].strip()
+        raw_category = text.split("KATEGORİ:")[1].replace("*", "").strip()
         
-        # 4. Kategori Kontrolü ve Temizliği
-        category_name = category_name.replace("*", "").strip()
-        category = Category.objects.filter(name=category_name).first()
-        if not category:
-            category = Category.objects.create(name=category_name)
+        # 4. Kategori Kontrolü ve Sabitleme
+        category_name = "Genel"
+        for cat in ALLOWED_CATEGORIES:
+            if cat.lower() in raw_category.lower():
+                category_name = cat
+                break
+                
+        category, _ = Category.objects.get_or_create(name=category_name)
         
         # 5. Görsel Seçimi (Unsplash API)
         image_url = get_unsplash_image(slugify(topic))
