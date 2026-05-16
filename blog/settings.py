@@ -130,8 +130,9 @@ CLOUDINARY_STORAGE = {
     'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', '')
 }
 
+# ── STORAGES SÖZLÜĞÜ (KESİN AYARLAR) ──
 if os.environ.get('CLOUDINARY_CLOUD_NAME'):
-    # Üretim Ortamı (Railway)
+    # Üretim (Railway)
     STORAGES = {
         "default": {
             "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
@@ -140,15 +141,8 @@ if os.environ.get('CLOUDINARY_CLOUD_NAME'):
             "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
         },
     }
-    # Whitenoise Hata Giderme Ayarları
-    WHITENOISE_MANIFEST_STRICT = False
-    WHITENOISE_KEEP_ONLY_HASHED_FILES = False
-    
-    # Eski kütüphane uyumluluğu için (AttributeError engelleme)
-    DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
-    STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 else:
-    # Lokal Geliştirme
+    # Lokal
     STORAGES = {
         "default": {
             "BACKEND": "django.core.files.storage.FileSystemStorage",
@@ -177,3 +171,9 @@ CKEDITOR_CONFIGS = {
         'width': '100%',
     },
 }
+
+# ── WHITENOISE VE CLOUDINARY HATA GİDERME (EN ALT) ──
+WHITENOISE_MANIFEST_STRICT = False
+WHITENOISE_KEEP_ONLY_HASHED_FILES = False
+STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
+DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
