@@ -100,12 +100,13 @@ def index(request):
         })
 
     return render(request, 'index.html', {
-        'articles': page_obj, # Use page_obj instead of full articles list
+        'articles': page_obj,
         'latest_article': latest_article,
         'popular_articles': popular_articles,
         'top_liked_articles': top_liked_articles,
         'top_users': top_users,
         'most_commented_articles': most_commented_articles,
+        'categories': Category.objects.all(),
         'page_obj': page_obj
     })
 
