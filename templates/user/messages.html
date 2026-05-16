@@ -447,6 +447,13 @@ $(document).ready(function() {
                     $("#chat-target-name").text(data.other_user.username);
                     $("#chat-target-status").text("Son görülme: " + data.other_user.last_seen);
                     
+                    // Durum noktasını güncelle
+                    if (data.other_user.is_online) {
+                        $("#chat-user-status-dot").addClass("status-online");
+                    } else {
+                        $("#chat-user-status-dot").removeClass("status-online");
+                    }
+
                     let hasAvatar = data.other_user.avatar && data.other_user.avatar.indexOf("default") === -1;
                     if(hasAvatar) {
                         $("#chat-user-avatar").attr("src", data.other_user.avatar).show();

@@ -214,6 +214,26 @@ def addComment(request, id):
             newComment.user = request.user
         newComment.save()
 
+        # BİLDİRİM OLUŞTUR (Eğer kendi makalesine yorum yapmadıysa)
+        if not parent_id and article.author != request.user:
+            notification = Notification.objects.create(
+                user=article.author,
+                sender=request.user if request.user.is_authenticated else None,
+                notification_type='reply', # Veya 'comment' tipi eklenebilir, şu an reply yeterli
+                text=f"{request.user.username if request.user.is_authenticated else 'Bir misafir'} makalenize yorum yaptı: {article.title[:20]}..."
+            )
+            # WebSoket üzerinden anlık gönder
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                f'user_{article.author.id}',
+                {
+                    'type': 'new_notification',
+                    'sender_id': request.user.id if request.user.is_authenticated else None,
+                    'notification_type': 'reply',
+                    'text': notification.text
+                }
+            )
+
         # YANIT BİLDİRİMİ OLUŞTUR
         if parent_id and parent_obj.user and parent_obj.user != request.user:
             notification = Notification.objects.create(
@@ -340,5 +360,20 @@ def likeComment(request, id):
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         return JsonResponse({'liked': liked, 'count': comment.likes.count()})
         
+        
     return redirect('article:detail', slug=comment.article.slug)
+
+@login_required(login_url="user:login")
+def deleteComment(request, id):
+    comment = get_object_or_404(Comment, id=id)
+    article_slug = comment.article.slug
+    
+    # Sadece yorum sahibi veya makale sahibi silebilir
+    if comment.user == request.user or comment.article.author == request.user:
+        comment.delete()
+        messages.success(request, "Yorum başarıyla silindi.")
+    else:
+        messages.error(request, "Bu yorumu silme yetkiniz yok!")
+        
+    return redirect('article:detail', slug=article_slug)
     
