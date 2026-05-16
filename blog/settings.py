@@ -138,16 +138,14 @@ if os.environ.get('CLOUDINARY_CLOUD_NAME'):
             "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
         },
         "staticfiles": {
-            "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
         },
     }
-    # Eski Django sürümleri veya bazı kütüphaneler için destek
-    WHITENOISE_MANIFEST_STRICT = False
-    WHITENOISE_KEEP_ONLY_HASHED_FILES = False
-    
-    # Uyumluluk için (Django 5.x öncesi kütüphaneler için)
-    STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
+    # Uyumluluk için
+    STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
     DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+    
+    WHITENOISE_MANIFEST_STRICT = False
 else:
     # LOKAL (Geliştirme Ortamı)
     STORAGES = {
