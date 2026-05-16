@@ -30,33 +30,6 @@ class Article(models.Model):
             self.slug = slugify(self.title.replace('ı', 'i').replace('ğ', 'g').replace('ü', 'u').replace('ş', 's').replace('ö', 'o').replace('ç', 'c'))
         super(Article, self).save(*args, **kwargs)
 
-        if self.article_image:
-            try:
-                # Cloudinary gibi uzak depolarda .path çalışmaz ve hata fırlatır
-                img_path = self.article_image.path
-                img = Image.open(img_path)
-
-                if img.size != (1200, 600):
-                    target_w, target_h = 1200, 600
-                    w, h = img.size
-                    target_ratio = target_w / target_h
-                    current_ratio = w / h
-
-                    if current_ratio > target_ratio:
-                        new_width = int(target_ratio * h)
-                        left = (w - new_width) / 2
-                        img = img.crop((left, 0, w - left, h))
-                    else:
-                        new_height = int(w / target_ratio)
-                        top = (h - new_height) / 2
-                        img = img.crop((0, top, w, h - top))
-
-                    img = img.resize((target_w, target_h), Image.LANCZOS)
-                    img.save(img_path, quality=90, optimize=True)
-            except (NotImplementedError, AttributeError, Exception) as e:
-                # Uzak depo (Cloudinary) durumunda işlem yapmadan geçiyoruz
-                print(f"Resim yerel olarak işlenemedi (Uzak depo aktif olabilir): {e}")
-
     def total_likes(self):
         return self.likes.count()
     

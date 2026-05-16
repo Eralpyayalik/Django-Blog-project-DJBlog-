@@ -1,4 +1,3 @@
-# Deployment Test Timestamp: 2026-05-16 16:03
 import os
 from pathlib import Path
 import dj_database_url
@@ -131,20 +130,23 @@ CLOUDINARY_STORAGE = {
     'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', '')
 }
 
-# ── STORAGES SÖZLÜĞÜ (GÜVENLİ AYARLAR) ──
+# ── STORAGE AYARLARI (CANLI VE LOKAL AYRIMI) ──
 if os.environ.get('CLOUDINARY_CLOUD_NAME'):
-    # Üretim (Railway)
+    # ÜRETİM (RAILWAY)
     STORAGES = {
         "default": {
             "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
         },
         "staticfiles": {
-            # Sorunlu sıkıştırma yerine en güvenli olan düz statik sunumu
             "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
         },
     }
+    DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+    STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
+    WHITENOISE_MANIFEST_STRICT = False
+    WHITENOISE_KEEP_ONLY_HASHED_FILES = False
 else:
-    # Lokal
+    # LOKAL
     STORAGES = {
         "default": {
             "BACKEND": "django.core.files.storage.FileSystemStorage",
@@ -173,10 +175,3 @@ CKEDITOR_CONFIGS = {
         'width': '100%',
     },
 }
-
-# ── HATA GİDERME (EN ALT) ──
-WHITENOISE_MANIFEST_STRICT = False
-WHITENOISE_KEEP_ONLY_HASHED_FILES = False
-# Burayı da düz storage'a çekiyoruz ki WhiteNoise'ın sıkıştırma motoru devreye girmesin
-STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
-DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
