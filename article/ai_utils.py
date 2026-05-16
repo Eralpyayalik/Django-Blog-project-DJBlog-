@@ -104,17 +104,19 @@ def generate_ai_article():
        BAŞLIK: [Başlık]
        İÇERİK: [HTML İçerik]
        KATEGORİ: [Seçilen Kategori]
+       GÖRSEL: [Unsplash'ta aratmak için bu konuyu anlatan 1 veya 2 kelimelik İNGİLİZCE bir arama terimi. Örn: 'gaming mouse', 'cyberpunk', 'laptop']
     """
     
     try:
         response = model.generate_content(prompt)
         text = response.text
-        if "BAŞLIK:" not in text or "İÇERİK:" not in text or "KATEGORİ:" not in text:
+        if "BAŞLIK:" not in text or "İÇERİK:" not in text or "KATEGORİ:" not in text or "GÖRSEL:" not in text:
             return f"Hata: AI formatı bozdu."
 
         title = text.split("BAŞLIK:")[1].split("İÇERİK:")[0].strip()
         content = text.split("İÇERİK:")[1].split("KATEGORİ:")[0].strip()
-        raw_category = text.split("KATEGORİ:")[1].replace("*", "").strip()
+        raw_category = text.split("KATEGORİ:")[1].split("GÖRSEL:")[0].replace("*", "").strip()
+        image_query = text.split("GÖRSEL:")[1].strip().replace("'", "").replace('"', "")
         
         # AKILLI EŞLEŞTİRME (Mapping)
         category_name = "Oyun Dünyası" # Varsayılan
@@ -136,7 +138,7 @@ def generate_ai_article():
 
         category, _ = Category.objects.get_or_create(name=category_name)
         
-        image_url = get_unsplash_image(slugify(topic))
+        image_url = get_unsplash_image(slugify(image_query))
         article = Article(author=author, title=title, content=content, category=category)
         img_response = requests.get(image_url)
         if img_response.status_code == 200:

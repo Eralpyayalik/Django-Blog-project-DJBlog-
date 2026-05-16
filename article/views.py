@@ -372,11 +372,13 @@ def deleteComment(request, id):
             return JsonResponse({'status': 'error', 'message': 'Yetkisiz işlem!'}, status=43)
         messages.error(request, "Bu yorumu silme yetkiniz yok!")
         
+from django.http import Http404
+
 @login_required(login_url="user:login")
 def trigger_ai_post(request):
-    # Sadece süper kullanıcı (sen) tetikleyebilsin
+    # Sadece süper kullanıcı (sen) tetikleyebilsin, başkası denerse "Sayfa Bulunamadı" hatası alsın
     if not request.user.is_superuser:
-        return HttpResponse("Yetkisiz erişim!", status=43)
+        raise Http404("Böyle bir sayfa yok.")
         
     from django.core.management import call_command
     # Önce yazarların olduğundan emin ol (varsa oluşturmaz zaten)
