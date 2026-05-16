@@ -134,6 +134,7 @@ def profile_view(request, username):
 from .models import Message, Notification
 from django.db.models import Q
 from django.http import JsonResponse
+from django.utils import timezone
 
 @login_required(login_url="user:login")
 def inbox(request):
@@ -172,7 +173,7 @@ def inbox(request):
                 'avatar': c['user'].profile.image.url if hasattr(c['user'], 'profile') and c['user'].profile.image else '/media/default.jpg',
                 'last_msg': c['last_message'].body[:30] if c['last_message'] else '',
                 'unread': c['unread_count'],
-                'time': c['last_message'].created_at.strftime("%H:%M") if c['last_message'] else '',
+                'time': timezone.localtime(c['last_message'].created_at).strftime("%H:%M") if c['last_message'] else '',
                 'is_online': c['user'].profile.is_online
             })
         return JsonResponse({'conversations': conv_data})
@@ -211,7 +212,7 @@ def chat_detail(request, user_id):
                 print(f"WebSocket broadcast hatası: {e}")
             
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-                return JsonResponse({'status': 'success', 'body': msg.body, 'time': msg.created_at.strftime("%H:%M")})
+                return JsonResponse({'status': 'success', 'body': msg.body, 'time': timezone.localtime(msg.created_at).strftime("%H:%M")})
             return redirect('user:chat_detail', user_id=user_id)
 
     messages_list = Message.objects.filter(
@@ -232,7 +233,7 @@ def chat_detail(request, user_id):
                 'sender': m.sender.username,
                 'avatar': m.sender.profile.image.url if hasattr(m.sender, 'profile') and m.sender.profile.image else '/media/default.jpg',
                 'body': m.body,
-                'time': m.created_at.strftime("%H:%M"),
+                'time': timezone.localtime(m.created_at).strftime("%H:%M"),
                 'is_me': m.sender == request.user,
                 'is_read': m.is_read
             })
@@ -245,7 +246,7 @@ def chat_detail(request, user_id):
                 'username': other_user.username,
                 'avatar': other_user.profile.image.url if has_profile and other_user.profile.image else '/media/default.jpg',
                 'is_online': other_user.profile.is_online if has_profile else False,
-                'last_seen': (other_user.profile.last_seen.strftime("%H:%M") if other_user.profile.last_seen else "Hiç görülmedi") if has_profile else "Bilinmiyor"
+                'last_seen': (timezone.localtime(other_user.profile.last_seen).strftime("%H:%M") if other_user.profile.last_seen else "Hiç görülmedi") if has_profile else "Bilinmiyor"
             }
         })
 
@@ -282,7 +283,7 @@ def notifications_api(request):
             'sender': n.sender.username if n.sender else "Sistem",
             'sender_id': n.sender.id if n.sender else None,
             'avatar': n.sender.profile.image.url if n.sender and hasattr(n.sender, 'profile') and n.sender.profile.image else '/media/default.jpg',
-            'time': n.created_at.strftime("%H:%M"),
+            'time': timezone.localtime(n.created_at).strftime("%H:%M"),
             'is_read': n.is_read
         })
         
