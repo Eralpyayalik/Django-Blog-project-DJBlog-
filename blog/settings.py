@@ -29,6 +29,7 @@ SECRET_KEY = 'django-insecure-bz61jl0jjti5g9vxs*@23be5z58-%r%pnc72sk-u1tw43to4qh
 DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 'yes')
 
 ALLOWED_HOSTS = ["django-blog-project-djblog-production.up.railway.app", "localhost", "127.0.0.1"]
+CSRF_TRUSTED_ORIGINS = ["https://django-blog-project-djblog-production.up.railway.app"]
 
 CSRF_TRUSTED_ORIGINS = ["https://django-blog-project-djblog-production.up.railway.app"]
 
