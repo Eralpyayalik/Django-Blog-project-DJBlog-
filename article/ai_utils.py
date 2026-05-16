@@ -77,27 +77,29 @@ def generate_ai_article():
         "2026'da İzlenmesi Gereken YouTuber'lar", 
         "Twitch vs YouTube: Yayıncılar Nereye Gidiyor?",
         "GTA 6'dan Yeni Detaylar: Harita ve Karakterler",
-        "En İyi Oyuncu Mouse'ları: Ürün İncelemesi",
+        "En İyi Oyuncu Mouse'ları: Detaylı İnceleme",
         "PlayStation 6 Hakkındaki Son Söylentiler",
         "Yazılımcılar İçin En İyi Laptoplar (2026)",
         "Yeni Nesil Akıllı Gözlükler ve VR Dünyası",
         "Mobil Oyun Dünyasındaki Devrim: Yeni AAA Oyunlar",
-        "E-Spor Arenasında Bu Hafta Neler Oldu?"
+        "E-Spor Arenasında Bu Hafta Neler Oldu?",
+        "Windows 11 Tweak Rehberi: FPS Artırma Yolları",
+        "Bu Ay İzlemeniz Gereken En İyi Bilim Kurgu Dizileri"
     ]
     topic = random.choice(topics)
     
     model = genai.GenerativeModel('gemini-flash-latest')
     
-    # KESİN VE NET KATEGORİ LİSTESİ
-    ALLOWED_CATEGORIES = ["Teknoloji", "Yazılım", "Oyun", "Ürün İnceleme", "Yayıncılık"]
+    # SENİN ORIJINAL KATEGORİLERİN
+    ALLOWED_CATEGORIES = ["Ürün İnceleme", "Tweak & Performans", "Oyun Dünyası", "Filmler & Diziler", "Akış (Stream)"]
     
     prompt = f"""
-    Sen {author.username} isimli bir teknoloji içerik üreticisisin.
+    Sen {author.username} isimli bir içerik üreticisisin.
     Konu: '{topic}'
     
     KURALLAR:
     1. KATEGORİ mutlaka şu listeden biri olmalıdır: {', '.join(ALLOWED_CATEGORIES)}.
-    2. Sakın 'İnceleme' veya başka bir isim kullanma, eğer ürün inceliyorsan tam olarak 'Ürün İnceleme' yaz.
+    2. Başka hiçbir kategori ismi uydurma.
     3. Yazı Formatı:
        BAŞLIK: [Başlık]
        İÇERİK: [HTML İçerik]
@@ -115,23 +117,22 @@ def generate_ai_article():
         raw_category = text.split("KATEGORİ:")[1].replace("*", "").strip()
         
         # AKILLI EŞLEŞTİRME (Mapping)
-        category_name = "Teknoloji" # Varsayılan
+        category_name = "Oyun Dünyası" # Varsayılan
         
-        # Eğer AI 'İnceleme' falan derse onu 'Ürün İnceleme'ye çek
-        if "inceleme" in raw_category.lower():
+        if "ürün" in raw_category.lower() or "inceleme" in raw_category.lower():
             category_name = "Ürün İnceleme"
+        elif "tweak" in raw_category.lower() or "performans" in raw_category.lower() or "fps" in raw_category.lower():
+            category_name = "Tweak & Performans"
         elif "oyun" in raw_category.lower():
-            category_name = "Oyun"
-        elif "yazılım" in raw_category.lower() or "kod" in raw_category.lower():
-            category_name = "Yazılım"
-        elif "yayın" in raw_category.lower() or "youtube" in raw_category.lower() or "twitch" in raw_category.lower():
-            category_name = "Yayıncılık"
-        elif "tekno" in raw_category.lower():
-            category_name = "Teknoloji"
+            category_name = "Oyun Dünyası"
+        elif "film" in raw_category.lower() or "dizi" in raw_category.lower():
+            category_name = "Filmler & Diziler"
+        elif "akış" in raw_category.lower() or "stream" in raw_category.lower() or "youtube" in raw_category.lower() or "twitch" in raw_category.lower():
+            category_name = "Akış (Stream)"
             
-        # Son bir kontrol: Eğer hala listede yoksa zorla listeden birini seç
+        # Son güvenlik kilidi
         if category_name not in ALLOWED_CATEGORIES:
-            category_name = random.choice(ALLOWED_CATEGORIES)
+            category_name = "Oyun Dünyası"
 
         category, _ = Category.objects.get_or_create(name=category_name)
         
