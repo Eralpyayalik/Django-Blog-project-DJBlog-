@@ -192,7 +192,8 @@ def chat_detail(request, user_id):
                 user=other_user,
                 sender=request.user,
                 notification_type='message',
-                text=f"{request.user.username} size bir mesaj gönderdi."
+                text=f"{request.user.username} size bir mesaj gönderdi.",
+                target_url=reverse('user:chat_detail', kwargs={'user_id': request.user.id})
             )
             
             # WebSocket Broadcast (Hata yönetimi ile)
@@ -284,7 +285,8 @@ def notifications_api(request):
             'sender_id': n.sender.id if n.sender else None,
             'avatar': n.sender.profile.image.url if n.sender and hasattr(n.sender, 'profile') and n.sender.profile.image else '/media/default.jpg',
             'time': timezone.localtime(n.created_at).strftime("%H:%M"),
-            'is_read': n.is_read
+            'is_read': n.is_read,
+            'target_url': n.target_url
         })
         
     return JsonResponse({

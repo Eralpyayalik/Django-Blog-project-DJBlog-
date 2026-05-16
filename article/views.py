@@ -221,7 +221,8 @@ def addComment(request, id):
                 user=article.author,
                 sender=request.user if request.user.is_authenticated else None,
                 notification_type='reply', # Veya 'comment' tipi eklenebilir, şu an reply yeterli
-                text=f"{request.user.username if request.user.is_authenticated else 'Bir misafir'} makalenize yorum yaptı: {article.title[:20]}..."
+                text=f"{request.user.username if request.user.is_authenticated else 'Bir misafir'} makalenize yorum yaptı: {article.title[:20]}...",
+                target_url=reverse('article:detail', kwargs={'slug': article.slug}) + f"#comment-{newComment.id}"
             )
             # WebSoket üzerinden anlık gönder
             channel_layer = get_channel_layer()
@@ -241,7 +242,8 @@ def addComment(request, id):
                 user=parent_obj.user,
                 sender=request.user if request.user.is_authenticated else None,
                 notification_type='reply',
-                text=f"{request.user.username if request.user.is_authenticated else 'Bir misafir'} yorumunuza yanıt verdi."
+                text=f"{request.user.username if request.user.is_authenticated else 'Bir misafir'} yorumunuza yanıt verdi.",
+                target_url=reverse('article:detail', kwargs={'slug': article.slug}) + f"#comment-{newComment.id}"
             )
             # WebSoket üzerinden anlık gönder
             channel_layer = get_channel_layer()
@@ -295,7 +297,8 @@ def like_article(request, id):
                 user=article.author,
                 sender=request.user,
                 notification_type='like',
-                text=f"{request.user.username} makalenizi beğendi: {article.title[:20]}..."
+                text=f"{request.user.username} makalenizi beğendi: {article.title[:20]}...",
+                target_url=reverse('article:detail', kwargs={'slug': article.slug})
             )
             # WebSoket üzerinden anlık gönder
             channel_layer = get_channel_layer()
@@ -331,7 +334,8 @@ def likeComment(request, id):
                 user=comment.user,
                 sender=request.user,
                 notification_type='reply',
-                text=f"{request.user.username} yorumunuzu beğendi: {comment.comment_content[:20]}..."
+                text=f"{request.user.username} yorumunuzu beğendi: {comment.comment_content[:20]}...",
+                target_url=reverse('article:detail', kwargs={'slug': comment.article.slug}) + f"#comment-{comment.id}"
             )
             # WebSoket üzerinden anlık gönder
             channel_layer = get_channel_layer()

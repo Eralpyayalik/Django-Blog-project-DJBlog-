@@ -68,7 +68,7 @@
                         let html = "";
                         if (data.notifications && data.notifications.length > 0) {
                             data.notifications.forEach(function(n) {
-                                let link = n.sender_id ? `/user/messages/?user_id=${n.sender_id}` : "#";
+                                let link = n.target_url ? n.target_url : (n.sender_id ? `/user/messages/?user_id=${n.sender_id}` : "#");
                                 html += `
                                 <a href="${link}" class="list-group-item list-group-item-action p-3 border-0 ${!n.is_read ? 'bg-light' : ''}">
                                     <div class="d-flex align-items-center gap-3">

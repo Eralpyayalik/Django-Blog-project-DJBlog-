@@ -77,6 +77,7 @@ class Notification(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='triggered_notifications', null=True, blank=True) # Bildirimi tetikleyen kişi
     notification_type = models.CharField(max_length=20) # 'message', 'like', 'reply' vb.
     text = models.CharField(max_length=255)
+    target_url = models.CharField(max_length=255, null=True, blank=True)
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
