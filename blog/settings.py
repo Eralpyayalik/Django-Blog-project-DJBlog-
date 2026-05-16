@@ -94,6 +94,12 @@ else:
     }
 
 # Veritabanı Ayarı (Railway PostgreSQL + Lokal SQLite)
+DATABASE_URL = os.environ.get('DATABASE_URL')
+
+if os.environ.get('RAILWAY_STATIC_URL') and not DATABASE_URL:
+    # Eğer Railway'deysen ve DATABASE_URL yoksa uyar
+    print("CRITICAL: DATABASE_URL is not set on Railway! Using ephemeral SQLite.")
+
 DATABASES = {
     'default': dj_database_url.config(
         default=f'sqlite:///{BASE_DIR / "db.sqlite3"}',
