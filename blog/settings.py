@@ -9,55 +9,50 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
-from django.contrib.messages import constants as messages
 import os
 from pathlib import Path
 import dj_database_url
-import mimetypes
+from django.contrib.messages import constants as messages
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
-
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-bz61jl0jjti5g9vxs*@23be5z58-%r%pnc72sk-u1tw43to4qh'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-bz61jl0jjti5g9vxs*@23be5z58-%r%pnc72sk-u1tw43to4qh')
 
 # SECURITY WARNING: don't run with debug turned on in production!
+# Lokal ortamda True, Railway'de (eğer ayarlanmazsa) False olur.
 DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 'yes')
 
 ALLOWED_HOSTS = ["django-blog-project-djblog-production.up.railway.app", "localhost", "127.0.0.1"]
 CSRF_TRUSTED_ORIGINS = ["https://django-blog-project-djblog-production.up.railway.app"]
 
-CSRF_TRUSTED_ORIGINS = ["https://django-blog-project-djblog-production.up.railway.app"]
-
-
 # Application definition
-
 INSTALLED_APPS = [
-    'daphne',
-    'cloudinary_storage',         
+    'daphne', # WebSocket için en üstte olmalı
+    'cloudinary_storage',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles', 
-    'cloudinary',                 
-    "article",
-    "user",
+    'django.contrib.staticfiles',
+    
+    # Kendi Uygulamaların
+    'article',
+    'user',
+    
+    # Üçüncü Taraf
+    'django_cleanup.apps.CleanupConfig',
     'crispy_forms',
     'crispy_bootstrap4',
     'ckeditor',
-    'django_cleanup.apps.CleanupConfig',
-    'channels',
+    'cloudinary',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # Must be right after SecurityMiddleware
+    'whitenoise.middleware.WhiteNoiseMiddleware', # Statik dosyalar için
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -72,14 +67,14 @@ ROOT_URLCONF = 'blog.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'django.template.context_processors.media',
             ],
         },
     },
@@ -87,6 +82,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'blog.wsgi.application'
 ASGI_APPLICATION = 'blog.asgi.application'
+
 # Railway/Production Redis Ayarı (Lokalde Redis yoksa InMemoryLayer kullanır)
 REDIS_URL = os.environ.get('REDIS_URL', os.environ.get('REDIS_PRIVATE_URL'))
 
@@ -100,68 +96,47 @@ if REDIS_URL:
         },
     }
 else:
-    # Lokal geliştirme için Redis gerektirmeyen yapı
     CHANNEL_LAYERS = {
         "default": {
             "BACKEND": "channels.layers.InMemoryChannelLayer",
         },
     }
 
-
-# Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
+# Veritabanı Ayarı (Railway PostgreSQL + Lokal SQLite)
 DATABASES = {
     'default': dj_database_url.config(
-        # Railway veritabanı linkini (DATABASE_URL) otomatik okur
-        # Eğer bulamazsa (lokaldeyken) db.sqlite3 dosyasını kullanır
         default=f'sqlite:///{BASE_DIR / "db.sqlite3"}',
         conn_max_age=600
     )
 }
 
-
 # Password validation
-# https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-
 # Internationalization
-# https://docs.djangoproject.com/en/5.2/topics/i18n/
-
-LANGUAGE_CODE = 'tr-tr'
-
+LANGUAGE_CODE = 'tr'
 TIME_ZONE = 'Europe/Istanbul'
-
 USE_I18N = True
-
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
-
+# Static & Media Dosya Ayarları (EKSİKSİZ)
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
-# Django 5.x — Storage backends
-if os.environ.get('CLOUDINARY_CLOUD_NAME'):
-    # Üretim (Railway) için Cloudinary
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Django 4.2+ / 5.x STORAGES Ayarı
+CLOUDINARY_CLOUD_NAME = os.environ.get('CLOUDINARY_CLOUD_NAME')
+
+if CLOUDINARY_CLOUD_NAME:
+    # Üretim Ortamı (Railway)
     STORAGES = {
         "default": {
             "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
@@ -170,8 +145,13 @@ if os.environ.get('CLOUDINARY_CLOUD_NAME'):
             "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
         },
     }
+    CLOUDINARY_STORAGE = {
+        'CLOUD_NAME': CLOUDINARY_CLOUD_NAME,
+        'API_KEY': os.environ.get('CLOUDINARY_API_KEY', ''),
+        'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', '')
+    }
 else:
-    # Yerel geliştirme için Local Storage
+    # Lokal Geliştirme
     STORAGES = {
         "default": {
             "BACKEND": "django.core.files.storage.FileSystemStorage",
@@ -181,47 +161,23 @@ else:
         },
     }
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
-
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap4"
-CRISPY_TEMPLATE_PACK = "bootstrap4"
-
-CKEDITOR_CONFIGS = {
-    'default': {
-        'removePlugins': 'stylesheet',
-        'allowedContent': True,
-        'width': '100%',
-    },
-}
-
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
-
-# ── Cloudinary Konfigürasyonu ──
-# Railway'de environment variable olarak tanımlanmalı:
-#   CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME', ''),
-    'API_KEY': os.environ.get('CLOUDINARY_API_KEY', ''),
-    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', '')
-}
-
-
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com' 
-EMAIL_PORT = 587             
-EMAIL_USE_TLS = True         
-EMAIL_HOST_USER = 'eralpfb99@gmail.com' 
-EMAIL_HOST_PASSWORD = 'ykyg myrh iepu dspk' 
-
+# Django mesaj etiketleri
 MESSAGE_TAGS = {
+    messages.DEBUG: 'secondary',
+    messages.INFO: 'info',
+    messages.SUCCESS: 'success',
+    messages.WARNING: 'warning',
     messages.ERROR: 'danger',
 }
 
-# ── MIME type fixes for Railway / WhiteNoise ──
-mimetypes.add_type("text/css", ".css", True)
-mimetypes.add_type("application/javascript", ".js", True)
-mimetypes.add_type("text/javascript", ".mjs", True)
-mimetypes.add_type("image/svg+xml", ".svg", True)
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
+CKEDITOR_CONFIGS = {
+    'default': {
+        'toolbar': 'full',
+        'height': 300,
+        'width': '100%',
+    },
+}
