@@ -6,6 +6,7 @@ from.forms import ArticleForm
 from django.contrib import messages
 from django.http import JsonResponse
 from django.db.models import Count, Sum
+from django.template.loader import render_to_string
 import os
 from django.contrib.auth.models import User
 from user.models import Notification
@@ -255,29 +256,16 @@ def addComment(request, id):
             )
 
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            user_image = None
-            rank_info = {"title": "MİSAFİR", "color": "#6c757d", "icon": "fa-ghost"}
-            total_xp = 0
-
-            if request.user.is_authenticated and hasattr(request.user, 'profile'):
-                if request.user.profile.image:
-                    user_image = request.user.profile.image.url
-                rank_info = request.user.profile.rank_info 
-                total_xp = request.user.profile.total_xp
-
+            # Yeni yorumu tam şablonuyla render et
+            comment_html = render_to_string('includes/comment_item.html', {
+                'comment': newComment,
+                'article_author': article.author.username,
+                'request': request
+            })
+            
             return JsonResponse({
                 'status': 'success',
-                'username': author,
-                'content': content,
-                'user_image': user_image,
-                'rank_title': rank_info.get('title'),
-                'rank_color': rank_info.get('color'),
-                'rank_icon': rank_info.get('icon'),
-                'total_xp': total_xp,
-                'is_author': (author == article.author.username),
-                'is_registered_user': request.user.is_authenticated, 
-                'is_staff': request.user.is_staff,
-                'is_superuser': request.user.is_superuser,
+                'comment_html': comment_html,
                 'parent_id': parent_id 
             })
             
