@@ -1,4 +1,4 @@
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, reverse
 from .forms import LoginForm, ProfileUpdateForm, RegisterForm, UserUpdateForm
 from django.contrib import messages
 from django.contrib.auth.models import User

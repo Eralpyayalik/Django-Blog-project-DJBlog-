@@ -450,7 +450,7 @@ $(document).ready(function() {
                     // Durum noktasını ve metnini güncelle
                     if (data.other_user.is_online) {
                         $("#chat-user-status-dot").addClass("status-online");
-                        $("#chat-target-status").text("Çevrim içi").addClass("text-success").removeClass("text-muted");
+                        $("#chat-target-status").text("Çevrimiçi").addClass("text-success").removeClass("text-muted");
                     } else {
                         $("#chat-user-status-dot").removeClass("status-online");
                         $("#chat-target-status").text("Son görülme: " + data.other_user.last_seen).addClass("text-muted").removeClass("text-success");
