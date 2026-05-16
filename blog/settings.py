@@ -176,3 +176,5 @@ CKEDITOR_CONFIGS = {
         'width': '100%',
     },
 }
+
+# FINAL DEPLOYMENT STABLE - NO MORE LOADDATA
