@@ -13,6 +13,11 @@ class Category(models.Model):
     slug=models.SlugField(unique=True, max_length=150)
     def __str__(self):
         return self.name
+        
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name.replace('ı', 'i').replace('ğ', 'g').replace('ü', 'u').replace('ş', 's').replace('ö', 'o').replace('ç', 'c'))
+        super(Category, self).save(*args, **kwargs)
 
 class Article(models.Model):
     author=models.ForeignKey("auth.User",on_delete=models.CASCADE,verbose_name="Yazar")

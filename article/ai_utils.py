@@ -81,8 +81,11 @@ def generate_ai_article():
         content = text.split("İÇERİK:")[1].split("KATEGORİ:")[0].strip()
         category_name = text.split("KATEGORİ:")[1].strip()
         
-        # 4. Kategori Kontrolü
-        category, _ = Category.objects.get_or_create(name=category_name)
+        # 4. Kategori Kontrolü ve Temizliği
+        category_name = category_name.replace("*", "").strip()
+        category = Category.objects.filter(name=category_name).first()
+        if not category:
+            category = Category.objects.create(name=category_name)
         
         # 5. Görsel Seçimi (Unsplash API)
         image_url = get_unsplash_image(slugify(topic))
