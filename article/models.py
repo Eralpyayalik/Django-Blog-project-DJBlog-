@@ -19,7 +19,7 @@ class Article(models.Model):
     title=models.CharField(max_length=75,verbose_name="Başlık")
     content=RichTextField()
     created_date=models.DateTimeField(auto_now_add=True,verbose_name="Oluşturulma Tarihi")
-    article_image=models.FileField(blank=True,null=True,verbose_name="Makaleye Resim Ekle")
+    article_image=models.ImageField(blank=True,null=True,verbose_name="Makaleye Resim Ekle")
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name='articles')
     likes = models.ManyToManyField('auth.User', related_name='liked_articles', blank=True)
     read_count = models.IntegerField(default=0, verbose_name="Okunma Sayısı")

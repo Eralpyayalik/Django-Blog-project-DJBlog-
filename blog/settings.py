@@ -34,7 +34,6 @@ INSTALLED_APPS = [
     'user',
     
     # Üçüncü Taraf
-    'django_cleanup.apps.CleanupConfig',
     'crispy_forms',
     'crispy_bootstrap4',
     'ckeditor',
