@@ -97,7 +97,29 @@
         }
         
         loadNavbarNotifications();
-        setInterval(loadNavbarNotifications, 60000);
+
+        // WebSocket Bildirimleri
+        if (currentUserId !== "0") {
+            const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+            const socket = new WebSocket(
+                protocol + window.location.host + '/ws/chat/'
+            );
+
+            socket.onmessage = function(e) {
+                const data = JSON.parse(e.data);
+                if (data.type === 'new_message' || data.type === 'new_notification') {
+                    // Anlık bildirim sesi veya görsel efekt eklenebilir
+                    loadNavbarNotifications();
+                }
+            };
+
+            socket.onclose = function(e) {
+                console.warn('Bildirim soketi kapandı, 5 sn sonra tekrar denenecek...');
+                setTimeout(function() {
+                    location.reload(); 
+                }, 5000);
+            };
+        }
     });
     </script>
 

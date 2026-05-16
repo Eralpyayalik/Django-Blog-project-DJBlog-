@@ -1,10 +1,18 @@
 import json
 import logging
 from channels.generic.websocket import AsyncWebsocketConsumer
+from channels.db import database_sync_to_async
+from django.utils import timezone
+from user.models import Profile
 
 logger = logging.getLogger(__name__)
 
 class ChatConsumer(AsyncWebsocketConsumer):
+    @database_sync_to_async
+    def update_user_last_seen(self):
+        if self.user and self.user.is_authenticated:
+            Profile.objects.filter(user=self.user).update(last_seen=timezone.now())
+
     async def connect(self):
         try:
             self.user = self.scope.get('user')
@@ -18,6 +26,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 )
                 
                 await self.accept()
+                # Bağlandığında çevrim içi bilgisini güncelle
+                await self.update_user_last_seen()
                 logger.info(f"WebSocket connected: User {self.user.id}")
             else:
                 logger.warning("WebSocket connection rejected: User not authenticated")
@@ -38,6 +48,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         try:
+            # Her aktivitede çevrim içi bilgisini güncelle
+            await self.update_user_last_seen()
+            
             data = json.loads(text_data)
             msg_type = data.get('type')
             
@@ -57,7 +70,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
             logger.error(f"WebSocket receive error: {str(e)}")
 
     async def typing_status_message(self, event):
-        # Sadece karşı tarafa gönderiyoruz
         await self.send(text_data=json.dumps({
             'type': 'typing_status',
             'is_typing': event['is_typing'],
@@ -65,9 +77,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
         }))
         
     async def new_message_notification(self, event):
-        # Sadece karşı tarafa gönderiyoruz
         await self.send(text_data=json.dumps({
             'type': 'new_message',
             'sender_id': event['sender_id']
+        }))
+
+    async def new_notification(self, event):
+        # Beğeni, Yorum Beğenisi vb. genel bildirimler için
+        await self.send(text_data=json.dumps({
+            'type': 'new_notification',
+            'sender_id': event.get('sender_id'),
+            'notification_type': event.get('notification_type'),
+            'text': event.get('text')
         }))
 

@@ -8,6 +8,9 @@ from django.http import JsonResponse
 from django.db.models import Count, Sum
 import os
 from django.contrib.auth.models import User
+from user.models import Notification
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 
 # Create your views here.
 
@@ -211,6 +214,26 @@ def addComment(request, id):
             newComment.user = request.user
         newComment.save()
 
+        # YANIT BİLDİRİMİ OLUŞTUR
+        if parent_id and parent_obj.user and parent_obj.user != request.user:
+            notification = Notification.objects.create(
+                user=parent_obj.user,
+                sender=request.user if request.user.is_authenticated else None,
+                notification_type='reply',
+                text=f"{request.user.username if request.user.is_authenticated else 'Bir misafir'} yorumunuza yanıt verdi."
+            )
+            # WebSoket üzerinden anlık gönder
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                f'user_{parent_obj.user.id}',
+                {
+                    'type': 'new_notification',
+                    'sender_id': request.user.id if request.user.is_authenticated else None,
+                    'notification_type': 'reply',
+                    'text': notification.text
+                }
+            )
+
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             user_image = None
             rank_info = {"title": "MİSAFİR", "color": "#6c757d", "icon": "fa-ghost"}
@@ -257,6 +280,26 @@ def like_article(request, id):
     else:
         article.likes.add(request.user)
         liked = True
+        
+        # BİLDİRİM OLUŞTUR (Kendi makalesini beğenmediyse)
+        if article.author != request.user:
+            notification = Notification.objects.create(
+                user=article.author,
+                sender=request.user,
+                notification_type='like',
+                text=f"{request.user.username} makalenizi beğendi: {article.title[:20]}..."
+            )
+            # WebSoket üzerinden anlık gönder
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                f'user_{article.author.id}',
+                {
+                    'type': 'new_notification',
+                    'sender_id': request.user.id,
+                    'notification_type': 'like',
+                    'text': notification.text
+                }
+            )
     
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         return JsonResponse({'liked': liked, 'count': article.likes.count()})
@@ -273,6 +316,26 @@ def likeComment(request, id):
     else:
         comment.likes.add(request.user)
         liked = True
+        
+        # BİLDİRİM OLUŞTUR (Kendi yorumunu beğenmediyse)
+        if comment.user and comment.user != request.user:
+            notification = Notification.objects.create(
+                user=comment.user,
+                sender=request.user,
+                notification_type='reply',
+                text=f"{request.user.username} yorumunuzu beğendi: {comment.comment_content[:20]}..."
+            )
+            # WebSoket üzerinden anlık gönder
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                f'user_{comment.user.id}',
+                {
+                    'type': 'new_notification',
+                    'sender_id': request.user.id,
+                    'notification_type': 'reply',
+                    'text': notification.text
+                }
+            )
     
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         return JsonResponse({'liked': liked, 'count': comment.likes.count()})
