@@ -15,3 +15,6 @@ django-cloudinary-storage
 channels
 daphne
 channels_redis
+google-generativeai
+requests
+python-dotenv
