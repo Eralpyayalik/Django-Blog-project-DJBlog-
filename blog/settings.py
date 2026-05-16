@@ -142,11 +142,12 @@ if os.environ.get('CLOUDINARY_CLOUD_NAME'):
         },
     }
     # Eski Django sürümleri veya bazı kütüphaneler için destek
-    DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
-    STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
-    
     WHITENOISE_MANIFEST_STRICT = False
     WHITENOISE_KEEP_ONLY_HASHED_FILES = False
+    
+    # Uyumluluk için (Django 5.x öncesi kütüphaneler için)
+    STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
+    DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 else:
     # LOKAL (Geliştirme Ortamı)
     STORAGES = {
@@ -158,6 +159,7 @@ else:
         },
     }
     DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
+    STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
 
 # Django mesaj etiketleri
 MESSAGE_TAGS = {
