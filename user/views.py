@@ -203,7 +203,7 @@ def chat_detail(request, user_id):
                     sender=request.user,
                     notification_type='message',
                     text=f"{request.user.username} size bir mesaj gönderdi.",
-                    target_url=reverse('user:chat_detail', kwargs={'user_id': request.user.id})
+                    target_url=reverse('user:messages_page') + f"?user_id={request.user.id}"
                 )
             
             # WebSocket Broadcast (Hata yönetimi ile)
@@ -261,10 +261,8 @@ def chat_detail(request, user_id):
             }
         })
 
-    return render(request, 'user/chat_detail.html', {
-        'other_user': other_user,
-        'messages_list': messages_list
-    })
+    # Eğer AJAX değilse (direkt linkle gelindiyse) ana mesaj sayfasına yönlendir
+    return redirect(reverse('user:messages_page') + f"?user_id={user_id}")
 
 
 @login_required(login_url="user:login")
