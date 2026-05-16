@@ -137,7 +137,10 @@ CLOUDINARY_STORAGE = {
 }
 
 # ── STORAGE AYARLARI (CANLI VE LOKAL AYRIMI) ──
-if os.environ.get('CLOUDINARY_CLOUD_NAME'):
+# Railway'de olduğumuzu anlamak için DATABASE_URL veya RAILWAY_ENVIRONMENT kullanabiliriz.
+IS_PRODUCTION = os.environ.get('DATABASE_URL') is not None
+
+if IS_PRODUCTION:
     # ÜRETİM (RAILWAY)
     STORAGES = {
         "default": {
@@ -147,9 +150,9 @@ if os.environ.get('CLOUDINARY_CLOUD_NAME'):
             "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
         },
     }
-    # Uyumluluk için
-    STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
+    # Eski Django sürümleri ve kütüphaneler için destek
     DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+    STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
     
     WHITENOISE_MANIFEST_STRICT = False
 else:
