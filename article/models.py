@@ -31,15 +31,12 @@ class Article(models.Model):
         super(Article, self).save(*args, **kwargs)
 
         if self.article_image:
-                try:
-                    # Resmin tam yolunu al (BASE_DIR + MEDIA_URL gibi)
-                    img_path = self.article_image.path
-                    img = Image.open(img_path)
+            try:
+                # Cloudinary gibi uzak depolarda .path çalışmaz ve hata fırlatır
+                img_path = self.article_image.path
+                img = Image.open(img_path)
 
-                    # EĞER RESİM ZATEN 1200x600 İSE TEKRAR İŞLEM YAPMA (Sonsuz döngü engelleme)
-                    if img.size == (1200, 600):
-                        return
-                    # Boyutlandırma ve Kırpma Mantığı (Aynı kod)
+                if img.size != (1200, 600):
                     target_w, target_h = 1200, 600
                     w, h = img.size
                     target_ratio = target_w / target_h
@@ -55,10 +52,10 @@ class Article(models.Model):
                         img = img.crop((0, top, w, h - top))
 
                     img = img.resize((target_w, target_h), Image.LANCZOS)
-                    img.save(img_path, quality=90, optimize=True) 
-                    
-                except Exception as e:
-                    print(f"Resim işlenirken hata oluştu: {e}") 
+                    img.save(img_path, quality=90, optimize=True)
+            except (NotImplementedError, AttributeError, Exception) as e:
+                # Uzak depo (Cloudinary) durumunda işlem yapmadan geçiyoruz
+                print(f"Resim yerel olarak işlenemedi (Uzak depo aktif olabilir): {e}")
 
     def total_likes(self):
         return self.likes.count()

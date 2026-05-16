@@ -194,17 +194,21 @@ def chat_detail(request, user_id):
                 text=f"{request.user.username} size bir mesaj gönderdi."
             )
             
-            # WebSocket Broadcast
-            from channels.layers import get_channel_layer
-            from asgiref.sync import async_to_sync
-            channel_layer = get_channel_layer()
-            async_to_sync(channel_layer.group_send)(
-                f'user_{other_user.id}',
-                {
-                    'type': 'new_message_notification',
-                    'sender_id': request.user.id
-                }
-            )
+            # WebSocket Broadcast (Hata yönetimi ile)
+            try:
+                from channels.layers import get_channel_layer
+                from asgiref.sync import async_to_sync
+                channel_layer = get_channel_layer()
+                if channel_layer:
+                    async_to_sync(channel_layer.group_send)(
+                        f'user_{other_user.id}',
+                        {
+                            'type': 'new_message_notification',
+                            'sender_id': request.user.id
+                        }
+                    )
+            except Exception as e:
+                print(f"WebSocket broadcast hatası: {e}")
             
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                 return JsonResponse({'status': 'success', 'body': msg.body, 'time': msg.created_at.strftime("%H:%M")})
@@ -232,14 +236,16 @@ def chat_detail(request, user_id):
                 'is_me': m.sender == request.user,
                 'is_read': m.is_read
             })
+        
+        has_profile = hasattr(other_user, 'profile')
         return JsonResponse({
             'messages': msg_data,
             'other_user': {
                 'id': other_user.id,
                 'username': other_user.username,
-                'avatar': other_user.profile.image.url if hasattr(other_user, 'profile') and other_user.profile.image else '/media/default.jpg',
-                'is_online': other_user.profile.is_online,
-                'last_seen': other_user.profile.last_seen.strftime("%H:%M") if other_user.profile.last_seen else "Hiç görülmedi"
+                'avatar': other_user.profile.image.url if has_profile and other_user.profile.image else '/media/default.jpg',
+                'is_online': other_user.profile.is_online if has_profile else False,
+                'last_seen': (other_user.profile.last_seen.strftime("%H:%M") if other_user.profile.last_seen else "Hiç görülmedi") if has_profile else "Bilinmiyor"
             }
         })
 
@@ -293,8 +299,8 @@ def messages_page(request):
         try:
             from django.contrib.auth.models import User
             target_user = User.objects.get(id=target_user_id)
-        except User.DoesNotExist:
-            pass
+        except (User.DoesNotExist, ValueError, TypeError):
+            target_user = None
             
     return render(request, 'user/messages.html', {
         'target_user': target_user

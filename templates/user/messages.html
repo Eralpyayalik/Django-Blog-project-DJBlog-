@@ -66,6 +66,7 @@
         background: #fafafa;
         display: flex;
         flex-direction: column;
+        position: relative;
     }
 
     .msg-bubble-modern {
@@ -140,6 +141,33 @@
     
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-thumb { background: #dee2e6; border-radius: 10px; }
+
+    /* Typing Animation */
+    .typing-indicator {
+        background-color: #f0f2f5;
+        padding: 8px 12px;
+        border-radius: 18px;
+        display: inline-flex;
+        align-items: center;
+        margin-bottom: 10px;
+        align-self: flex-start;
+        font-size: 0.8rem;
+        color: #65676b;
+    }
+    .typing-indicator span {
+        height: 6px;
+        width: 6px;
+        float: left;
+        margin: 0 1px;
+        background-color: #9E9E9E;
+        display: block;
+        border-radius: 50%;
+        opacity: 0.4;
+    }
+    .typing-indicator span:nth-of-type(1) { animation: 1s blink infinite 0.3333s; }
+    .typing-indicator span:nth-of-type(2) { animation: 1s blink infinite 0.6666s; }
+    .typing-indicator span:nth-of-type(3) { animation: 1s blink infinite 0.9999s; }
+    @keyframes blink { 50% { opacity: 1; } }
 </style>
 {% endblock head %}
 
@@ -170,7 +198,6 @@
                     <div>
                         <h6 class="m-0 fw-bold" id="chat-target-name">Kullanıcı</h6>
                         <small id="chat-target-status" class="text-muted">Son görülme: ...</small>
-                        <small id="chat-typing-status" class="text-primary fw-bold ms-2" style="display: none; font-style: italic;">... yazıyor</small>
                     </div>
                 </div>
             </div>
@@ -181,7 +208,16 @@
                 <p class="small">Sol taraftaki listeden bir konuşmaya tıklayın.</p>
             </div>
 
-            <div class="chat-scroll-area" id="chat-messages" style="display: none !important;"></div>
+            <!-- Mesajların listelendiği asıl alan -->
+            <div class="chat-scroll-area" id="chat-messages" style="display: none !important;">
+                <div id="messages-wrapper" style="display: flex; flex-direction: column;"></div>
+                <div id="typing-indicator-wrapper" style="display: none;">
+                    <div class="typing-indicator">
+                        <span></span><span></span><span></span>
+                        <em class="ms-2">yazıyor...</em>
+                    </div>
+                </div>
+            </div>
 
             <div class="chat-footer z-1" id="chat-footer" style="display: none;">
                 <form id="chat-form">
@@ -201,8 +237,9 @@
 
 {% block js %}
 <script>
-const notificationSound = new Audio("https://actions.google.com/sounds/v1/communications/incoming_call_ringtone.ogg");
-notificationSound.volume = 0.5;
+// Bildirim sesi - Daha profesyonel bir "ding"
+const notificationSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3");
+notificationSound.volume = 0.4;
 
 $(document).ready(function() {
     let activeUserId = null;
@@ -213,52 +250,76 @@ $(document).ready(function() {
     let reconnectAttempts = 0;
     const maxAttempts = 5;
 
+    // WebSocket Bağlantısı (Exponential Backoff ile)
     function connectWebSocket() {
         const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
         const wsUrl = wsScheme + "://" + window.location.host + "/ws/chat/";
         
+        console.log("WebSocket bağlantısı başlatılıyor...");
         chatSocket = new WebSocket(wsUrl);
 
         chatSocket.onopen = function() {
-            console.log("WebSocket connected!");
-            reconnectAttempts = 0; // Reset counter on success
+            console.log("WebSocket bağlandı!");
+            reconnectAttempts = 0;
+            // Bağlantı açıldığında bir kez verileri tazele
+            if (activeUserId) loadChatHistory(activeUserId, false);
+            loadInbox();
         };
 
         chatSocket.onmessage = function(e) {
-            const data = JSON.parse(e.data);
-            if (data.type === 'typing_status' && parseInt(data.sender_id) === parseInt(activeUserId)) {
-                if (data.is_typing) { $("#chat-typing-status").fadeIn(100); } 
-                else { $("#chat-typing-status").fadeOut(100); }
-            } else if (data.type === 'new_message') {
-                if (parseInt(data.sender_id) !== currentUserId) { notificationSound.play().catch(e => {}); }
-                loadInbox();
-                if (parseInt(data.sender_id) === parseInt(activeUserId)) { loadChatHistory(activeUserId, true); }
+            try {
+                const data = JSON.parse(e.data);
+                if (data.type === 'typing_status' && parseInt(data.sender_id) === parseInt(activeUserId)) {
+                    if (data.is_typing) {
+                        $("#typing-indicator-wrapper").show();
+                        scrollToBottom(); // Yazıyor efekti gelince aşağı kaydır
+                    } else {
+                        $("#typing-indicator-wrapper").hide();
+                    }
+                } else if (data.type === 'new_message') {
+                    if (parseInt(data.sender_id) !== currentUserId) {
+                        notificationSound.play().catch(e => {});
+                    }
+                    loadInbox();
+                    if (parseInt(data.sender_id) === parseInt(activeUserId)) {
+                        loadChatHistory(activeUserId, true);
+                    }
+                }
+            } catch (err) {
+                console.error("Mesaj ayrıştırma hatası:", err);
             }
         };
 
-        chatSocket.onclose = function() {
+        chatSocket.onclose = function(e) {
             if (reconnectAttempts < maxAttempts) {
                 reconnectAttempts++;
-                console.warn(`WebSocket closed. Reconnect attempt ${reconnectAttempts}/${maxAttempts} in 5s...`);
-                setTimeout(connectWebSocket, 5000);
+                const delay = Math.min(10000, 1000 * reconnectAttempts); // Kademeli bekleme
+                console.warn(`Bağlantı kapandı. ${delay/1000}s içinde tekrar denenecek (${reconnectAttempts}/${maxAttempts})`);
+                setTimeout(connectWebSocket, delay);
             } else {
-                console.error("Sunucu bağlantısı koptu. Maksimum deneme sayısına ulaşıldı.");
-                alert("Sunucu bağlantısı koptu. Lütfen sayfayı yenileyin.");
+                console.error("Maksimum bağlantı denemesine ulaşıldı.");
             }
         };
 
         chatSocket.onerror = function(err) {
-            console.error("WebSocket error:", err);
+            console.error("WebSocket hatası:", err);
             chatSocket.close();
         };
     }
 
     connectWebSocket();
 
-    function scrollToBottom() {
+    // Auto-Scroll Fonksiyonu
+    function scrollToBottom(force = false) {
         const chatArea = document.getElementById("chat-messages");
         if (chatArea) {
-            setTimeout(() => { chatArea.scrollTo({ top: chatArea.scrollHeight, behavior: 'smooth' }); }, 150);
+            // Küçük bir gecikme DOM render süresi için gereklidir
+            setTimeout(() => {
+                chatArea.scrollTo({
+                    top: chatArea.scrollHeight,
+                    behavior: force ? 'auto' : 'smooth'
+                });
+            }, 100);
         }
     }
 
@@ -270,6 +331,7 @@ $(document).ready(function() {
         return initials.toUpperCase();
     }
 
+    // Inbox Listesini Yükle (AJAX)
     function loadInbox() {
         $.ajax({
             url: "{% url 'user:inbox' %}",
@@ -280,7 +342,7 @@ $(document).ready(function() {
                     data.conversations.forEach(function(c) {
                         let badge = c.unread > 0 ? `<span class="badge bg-primary rounded-pill">${c.unread}</span>` : "";
                         let isActive = parseInt(activeUserId) === parseInt(c.user_id) ? "active" : "";
-                        let showAvatar = (c.avatar && c.avatar.indexOf("default") === -1) ? true : false;
+                        let showAvatar = (c.avatar && c.avatar.indexOf("default") === -1);
                         
                         html += `
                         <div class="inbox-item p-3 d-flex align-items-center gap-3 ${isActive}" data-user-id="${c.user_id}" data-username="${c.username}">
@@ -303,12 +365,15 @@ $(document).ready(function() {
                             </div>
                         </div>`;
                     });
-                } else { html = '<div class="text-center p-5 text-muted small mt-4">Henüz mesajınız yok.</div>'; }
+                } else { 
+                    html = '<div class="text-center p-5 text-muted small mt-4">Henüz mesajınız yok.</div>'; 
+                }
                 $("#inbox-list").html(html);
             }
         });
     }
 
+    // Chat Geçmişini Yükle (AJAX)
     function loadChatHistory(userId, shouldScroll = false) {
         if (!userId) return;
         $.ajax({
@@ -326,72 +391,98 @@ $(document).ready(function() {
                             <div class="msg-time-modern">${m.time} ${m.is_me && m.is_read ? '<i class="fas fa-check-double ms-1 text-white-50"></i>' : (m.is_me ? '<i class="fas fa-check ms-1 text-white-50"></i>' : '')}</div>
                         </div>`;
                     });
-                } else { msgHtml = `<div class="text-center p-4 text-muted small mt-auto mb-auto">İlk mesajı siz gönderin...</div>`; }
+                } else { 
+                    msgHtml = `<div class="text-center p-4 text-muted small mt-auto mb-auto">İlk mesajı siz gönderin...</div>`; 
+                }
                 
-                $("#chat-messages").html(msgHtml);
+                // Wrapper'ı güncelle ki typing indicator kaybolmasın
+                $("#messages-wrapper").html(msgHtml);
                 
+                // Başlık bilgilerini güncelle
                 if (data.other_user) {
                     $("#chat-target-name").text(data.other_user.username);
-                    let hasAvatar = data.other_user.avatar && data.other_user.avatar.indexOf("default") === -1;
-                    const avatarImg = $("#chat-user-avatar");
-                    const initialsSpan = $("#chat-user-initials");
+                    $("#chat-target-status").text("Son görülme: " + data.other_user.last_seen);
                     
+                    let hasAvatar = data.other_user.avatar && data.other_user.avatar.indexOf("default") === -1;
                     if(hasAvatar) {
-                        avatarImg.attr("src", data.other_user.avatar).show();
-                        initialsSpan.hide();
+                        $("#chat-user-avatar").attr("src", data.other_user.avatar).show();
+                        $("#chat-user-initials").hide();
                     } else {
-                        avatarImg.hide();
-                        initialsSpan.text(getInitials(data.other_user.username)).show();
+                        $("#chat-user-avatar").hide();
+                        $("#chat-user-initials").text(getInitials(data.other_user.username)).show();
                     }
                 }
+                
                 if (shouldScroll) { scrollToBottom(); }
             }
         });
     }
 
+    // Kişi Seçme
     $(document).on("click", ".inbox-item", function() {
+        const userId = $(this).attr("data-user-id");
+        if (parseInt(userId) === currentUserId) return;
+        
         $(".inbox-item").removeClass("active");
         $(this).addClass("active");
-        let userId = $(this).attr("data-user-id");
-        if (parseInt(userId) === currentUserId) return;
+        
         activeUserId = userId;
         $("#chat-receiver-id").val(userId);
         $("#chat-empty-state").hide();
         $("#chat-header").attr("style", "display: flex !important;");
         $("#chat-messages").attr("style", "display: flex !important;");
         $("#chat-footer").show();
+        
+        // İlk yüklemede aşağı kaydır
         loadChatHistory(userId, true);
+        
         if (chatInterval) clearInterval(chatInterval);
-        chatInterval = setInterval(function() { loadChatHistory(activeUserId, false); loadInbox(); }, 15000);
+        // Polling: Sadece WebSocket bağlı değilse yedek olarak çalışır
+        chatInterval = setInterval(function() { 
+            if (chatSocket && chatSocket.readyState !== WebSocket.OPEN) {
+                loadChatHistory(activeUserId, false); 
+                loadInbox(); 
+            }
+        }, 15000);
     });
 
+    // Typing Feedback Logic (Debounce 1.5s)
     let typingDebounceTimer;
     let isCurrentlyTyping = false;
 
     $("#chat-input").on("input", function() {
         if (!activeUserId) return;
         
-        // 1) GÜVENLİ GÖNDERME KONTROLÜ
         if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
             if (!isCurrentlyTyping) {
                 isCurrentlyTyping = true;
-                chatSocket.send(JSON.stringify({ 'type': 'typing_status', 'is_typing': true, 'receiver_id': activeUserId }));
+                chatSocket.send(JSON.stringify({ 
+                    'type': 'typing_status', 
+                    'is_typing': true, 
+                    'receiver_id': activeUserId 
+                }));
             }
+            
             clearTimeout(typingDebounceTimer);
             typingDebounceTimer = setTimeout(() => {
                 isCurrentlyTyping = false;
                 if (chatSocket.readyState === WebSocket.OPEN) {
-                    chatSocket.send(JSON.stringify({ 'type': 'typing_status', 'is_typing': false, 'receiver_id': activeUserId }));
+                    chatSocket.send(JSON.stringify({ 
+                        'type': 'typing_status', 
+                        'is_typing': false, 
+                        'receiver_id': activeUserId 
+                    }));
                 }
             }, 1500);
         }
     });
 
+    // Mesaj Gönderme
     $("#chat-form").on("submit", function(e) {
         e.preventDefault();
-        let userId = $("#chat-receiver-id").val();
-        let messageInput = $("#chat-input");
-        let messageText = messageInput.val().trim();
+        const userId = $("#chat-receiver-id").val();
+        const messageInput = $("#chat-input");
+        const messageText = messageInput.val().trim();
         if (!messageText || !userId) return;
         
         $.ajax({
@@ -403,17 +494,41 @@ $(document).ready(function() {
                 loadChatHistory(userId, true);
                 loadInbox();
                 
-                // 1) GÜVENLİ GÖNDERME KONTROLÜ
-                if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
-                    clearTimeout(typingDebounceTimer);
-                    isCurrentlyTyping = false;
-                    chatSocket.send(JSON.stringify({ 'type': 'typing_status', 'is_typing': false, 'receiver_id': userId }));
+                // Yazıyor durumunu hemen temizle
+                clearTimeout(typingDebounceTimer);
+                isCurrentlyTyping = false;
+                if (chatSocket.readyState === WebSocket.OPEN) {
+                    chatSocket.send(JSON.stringify({ 
+                        'type': 'typing_status', 
+                        'is_typing': false, 
+                        'receiver_id': userId 
+                    }));
                 }
             }
         });
     });
 
     loadInbox();
+
+    // Eğer URL'den bir user_id gelmişse onu otomatik seç
+    const targetUserId = "{{ target_user.id|default:'' }}";
+    if (targetUserId && parseInt(targetUserId) !== currentUserId) {
+        setTimeout(() => {
+            const existingItem = $(`.inbox-item[data-user-id="${targetUserId}"]`);
+            if (existingItem.length > 0) {
+                existingItem.click();
+            } else {
+                // Listede olmayan YENİ bir kullanıcıya mesaj atılıyorsa
+                activeUserId = targetUserId;
+                $("#chat-receiver-id").val(targetUserId);
+                $("#chat-empty-state").hide();
+                $("#chat-header").attr("style", "display: flex !important;");
+                $("#chat-messages").attr("style", "display: flex !important;");
+                $("#chat-footer").show();
+                loadChatHistory(targetUserId, true);
+            }
+        }, 800); // Inbox'ın yüklenmesi için biraz daha süre tanıyalım
+    }
 });
 </script>
 {% endblock js %}

@@ -60,8 +60,13 @@ def index(request):
         like_count=Count('likes')
     ).order_by('-like_count')[:5] 
     
-    all_users = list(User.objects.all())
-    top_users = sorted(all_users, key=lambda u: u.profile.total_xp, reverse=True)[:5]
+    all_users = User.objects.all()
+    # Profile'ı olmayan kullanıcıları ele ve XP'ye göre sırala
+    top_users = sorted(
+        [u for u in all_users if hasattr(u, 'profile')], 
+        key=lambda u: u.profile.total_xp, 
+        reverse=True
+    )[:5]
 
     most_commented_articles = Article.objects.annotate(
         comment_count=Count('comments') 
