@@ -27,6 +27,9 @@ DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 'yes')
 ALLOWED_HOSTS = ["django-blog-project-djblog-production.up.railway.app", "localhost", "127.0.0.1"]
 CSRF_TRUSTED_ORIGINS = ["https://django-blog-project-djblog-production.up.railway.app"]
 
+# Railway proxy üzerinden gelen HTTPS isteklerini doğru algılamak için:
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 # Application definition
 INSTALLED_APPS = [
     'daphne', # WebSocket için en üstte olmalı
@@ -132,10 +135,14 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Django 4.2+ / 5.x STORAGES Ayarı
-CLOUDINARY_CLOUD_NAME = os.environ.get('CLOUDINARY_CLOUD_NAME')
+# Cloudinary Konfigürasyonu
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME', ''),
+    'API_KEY': os.environ.get('CLOUDINARY_API_KEY', ''),
+    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', '')
+}
 
-if CLOUDINARY_CLOUD_NAME:
+if os.environ.get('CLOUDINARY_CLOUD_NAME'):
     # Üretim Ortamı (Railway)
     STORAGES = {
         "default": {
@@ -145,15 +152,10 @@ if CLOUDINARY_CLOUD_NAME:
             "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
         },
     }
-    WHITENOISE_MANIFEST_STRICT = False
-    CLOUDINARY_STORAGE = {
-        'CLOUD_NAME': CLOUDINARY_CLOUD_NAME,
-        'API_KEY': os.environ.get('CLOUDINARY_API_KEY', ''),
-        'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', '')
-    }
     # Eski kütüphane uyumluluğu için (AttributeError engelleme)
-    STATICFILES_STORAGE = "cloudinary_storage.storage.StaticCloudinaryStorage"
     DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+    STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
+    WHITENOISE_MANIFEST_STRICT = False
 else:
     # Lokal Geliştirme
     STORAGES = {
