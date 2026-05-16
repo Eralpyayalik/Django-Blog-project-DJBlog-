@@ -129,19 +129,18 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Cloudinary Konfigürasyonu
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME', ''),
-    'API_KEY': os.environ.get('CLOUDINARY_API_KEY', ''),
-    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', '')
-}
+# ── STORAGE AYARLARI ──
+CLOUDINARY_CLOUD_NAME = os.environ.get('CLOUDINARY_CLOUD_NAME')
 
-# ── STORAGE AYARLARI (CANLI VE LOKAL AYRIMI) ──
-# Railway'de olduğumuzu anlamak için DATABASE_URL veya RAILWAY_ENVIRONMENT kullanabiliriz.
-IS_PRODUCTION = os.environ.get('DATABASE_URL') is not None
-
-if IS_PRODUCTION:
-    # ÜRETİM (RAILWAY)
+if CLOUDINARY_CLOUD_NAME:
+    # ÜRETİM (RAILWAY) AYARLARI
+    CLOUDINARY_STORAGE = {
+        'CLOUD_NAME': CLOUDINARY_CLOUD_NAME,
+        'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
+        'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
+    }
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+    
     STORAGES = {
         "default": {
             "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
@@ -150,13 +149,8 @@ if IS_PRODUCTION:
             "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
         },
     }
-    # Eski Django sürümleri ve kütüphaneler için destek
-    DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
-    STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
-    
-    WHITENOISE_MANIFEST_STRICT = False
 else:
-    # LOKAL (Geliştirme Ortamı)
+    # LOKAL AYARLAR
     STORAGES = {
         "default": {
             "BACKEND": "django.core.files.storage.FileSystemStorage",
@@ -165,8 +159,10 @@ else:
             "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
         },
     }
-    DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
-    STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
+
+# Statik ve Medya URL'leri
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
+WHITENOISE_MANIFEST_STRICT = False
 
 # Django mesaj etiketleri
 MESSAGE_TAGS = {
