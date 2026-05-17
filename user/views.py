@@ -10,8 +10,9 @@ from django.utils.encoding import force_bytes, force_str
 from .token import account_activation_token 
 from django.shortcuts import  get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .models import Profile
-
+from django.http import JsonResponse
+from .models import Profile, Message, Notification
+from django.db.models import Q
 
 def register(request):
     form = RegisterForm(request.POST or None)
@@ -123,11 +124,25 @@ def profile_edit(request):
 
 
 def profile_view(request, username):
+    from django.db.models import Sum
+    from article.models import Article
 
     user_profile = get_object_or_404(User, username=username)
+    articles = Article.objects.filter(author=user_profile)
+    
+    total_views = articles.aggregate(Sum('read_count'))['read_count__sum'] or 0
+    
+    total_likes = 0
+    for article in articles:
+        total_likes += article.likes.count()
+        
+    most_popular_article = articles.order_by('-read_count').first()
     
     context = {
-        'user_profile': user_profile 
+        'user_profile': user_profile,
+        'total_views': total_views,
+        'total_likes': total_likes,
+        'most_popular_article': most_popular_article,
     }
     return render(request, 'profile.html', context)
 
@@ -257,7 +272,10 @@ def chat_detail(request, user_id):
                 'username': other_user.username,
                 'avatar': other_user.profile.image.url if has_profile and other_user.profile.image else '/media/default.jpg',
                 'is_online': other_user.profile.is_online if has_profile else False,
-                'last_seen': (timezone.localtime(other_user.profile.last_seen).strftime("%H:%M") if other_user.profile.last_seen else "Hiç görülmedi") if has_profile else "Bilinmiyor"
+                'last_seen': (timezone.localtime(other_user.profile.last_seen).strftime("%H:%M") if other_user.profile.last_seen else "Hiç görülmedi") if has_profile else "Bilinmiyor",
+                'rank_title': other_user.profile.rank_info['title'] if has_profile else "Üye",
+                'rank_color': other_user.profile.rank_info['color'] if has_profile else "#94a3b8",
+                'xp': other_user.profile.total_xp if has_profile else 0
             }
         })
 
@@ -294,7 +312,8 @@ def notifications_api(request):
             'avatar': n.sender.profile.image.url if n.sender and hasattr(n.sender, 'profile') and n.sender.profile.image else '/media/default.jpg',
             'time': timezone.localtime(n.created_at).strftime("%H:%M"),
             'is_read': n.is_read,
-            'target_url': n.target_url
+            'target_url': n.target_url,
+            'notification_type': n.notification_type
         })
         
     return JsonResponse({

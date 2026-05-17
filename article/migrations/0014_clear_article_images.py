@@ -1,8 +1,7 @@
 from django.db import migrations
 
 def clear_images(apps, schema_editor):
-    Article = apps.get_model('article', 'Article')
-    Article.objects.all().update(article_image=None)
+    pass
 
 class Migration(migrations.Migration):
 
@@ -13,3 +12,4 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RunPython(clear_images),
     ]
+

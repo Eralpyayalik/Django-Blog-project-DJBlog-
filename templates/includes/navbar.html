@@ -1,14 +1,20 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm py-3" style="position: relative !important; z-index: 10000 !important;">
+{% load static %}
+<!-- Navbar Dark (Premium Slate) -->
+<nav class="navbar navbar-expand-lg navbar-dark py-3" style="position: sticky !important; top: 0; z-index: 10000 !important;">
   <div class="container px-lg-5">
-    <a class="navbar-brand fw-bold fs-4" href="/">
-      <span class="text-danger">Dj</span>Blog
+    
+    <!-- Logo (Görsel + Yazı) -->
+    <a class="navbar-brand fw-800 fs-4 d-flex align-items-center gap-2" href="/" style="font-family: 'Outfit', sans-serif;">
+      <img src="{% static 'img/logo_v2.png' %}" alt="Logo" style="height: 42px; width: 42px; border-radius: 8px; object-fit: cover;">
+      <span style="color: #ffffff;">Blog</span>
     </a>
     
-    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
     </button>
 
     <div class="collapse navbar-collapse" id="navbarNav">
+      <!-- Sol Menü -->
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <li class="nav-item">
           <a class="nav-link px-3" href="/">Anasayfa</a>
@@ -21,61 +27,69 @@
         </li>
       </ul>
 
+      <!-- Sağ Menü -->
       <div class="d-flex align-items-center">
-        <ul class="navbar-nav align-items-center">
+        <ul class="navbar-nav align-items-center gap-2">
           {% if request.user.is_authenticated %}
-            <li class="nav-item d-none d-lg-block me-2">
-                <span class="badge rounded-pill shadow-sm py-2 px-3 rank-badge rank-{{ request.user.profile.rank_info.class }}">
-                    <i class="fas {{ request.user.profile.rank_info.icon }}"></i>
+            
+            <!-- Rank Rozeti -->
+            <li class="nav-item d-none d-lg-block">
+                <span class="badge rounded-pill py-2 px-3 fw-700" style="background-color: {{ request.user.profile.rank_info.color }}22; color: {{ request.user.profile.rank_info.color }}; border: 1px solid {{ request.user.profile.rank_info.color }}44;">
+                    <i class="fas {{ request.user.profile.rank_info.icon }} me-1"></i>
                     {{ request.user.profile.rank_info.title }}
                 </span>
             </li>
 
+            <!-- Dashboard -->
             <li class="nav-item">
-              <a class="nav-link px-3 text-light opacity-75" href="/articles/dashboard/">
-                <i class="fas fa-columns me-1"></i> Dashboard
+              <a class="nav-link px-3 fw-600" href="/articles/dashboard/">
+                <i class="fas fa-columns me-1 text-primary"></i> Panel
               </a>
             </li>
 
-            <!-- Notification Bell -->
-            <li class="nav-item dropdown me-2">
-                <a class="nav-link p-0 position-relative d-flex align-items-center" href="#" id="notifDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="fas fa-bell fs-5 text-light opacity-75 px-2"></i>
+            <!-- Bildirimler (Notification Bell) -->
+            <li class="nav-item dropdown">
+                <a class="nav-link p-0 position-relative d-flex align-items-center" href="#" id="notifDropdown" role="button" data-bs-toggle="dropdown">
+                    <i class="fas fa-bell fs-5 text-white opacity-75 px-2"></i>
                     <span id="navbar-notif-count" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" style="font-size: 0.6rem; padding: 0.25em 0.4em; margin-left: -5px; margin-top: 5px;">
                         0
                     </span>
                 </a>
-                <div class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-3 p-0" aria-labelledby="notifDropdown" style="width: 320px; border-radius: 15px; overflow: hidden;">
-                    <div class="bg-dark text-white p-3 d-flex justify-content-between align-items-center">
-                        <span class="fw-bold small">Son Aktiviteler</span>
-                        <a href="{% url 'user:notifications' %}" class="text-white-50 small text-decoration-none" style="font-size: 0.7rem;">Tümünü Gör</a>
+                <div class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-3 p-0" aria-labelledby="notifDropdown" style="width: 320px; border-radius: 16px; overflow: hidden;">
+                    <div class="p-3 d-flex justify-content-between align-items-center" style="background: rgba(30, 41, 59, 0.98); border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <span class="fw-800 small text-white">Son Aktiviteler</span>
+                        <a href="{% url 'user:notifications' %}" class="text-primary small text-decoration-none fw-700" style="font-size: 0.75rem;">Tümünü Gör</a>
                     </div>
                     <div id="navbar-notif-list" class="list-group list-group-flush" style="max-height: 350px; overflow-y: auto;">
-                        <div class="text-center p-4 opacity-50 small">Yükleniyor...</div>
+                        <div class="text-center p-4 opacity-50 small text-white">Yükleniyor...</div>
                     </div>
                 </div>
             </li>
-            {% if request.user.is_authenticated %}
-            <li class="nav-item me-3">
-                <a class="nav-link d-flex align-items-center p-0 px-2" href="{% url 'user:profile' username=request.user.username %}">
+
+            <!-- Kullanıcı Profil -->
+            <li class="nav-item mx-2">
+                <a class="nav-link d-flex align-items-center p-0" href="{% url 'user:profile' username=request.user.username %}">
                     <img src="{{ request.user.profile.image.url }}" 
-                        class="rounded-circle border border-secondary shadow-sm" 
-                        style="width: 35px; height: 35px; object-fit: cover;">
-                    <span class="ms-2 d-none d-xl-inline text-light small fw-bold">{{ request.user.username }}</span>
+                        class="rounded-circle border border-2 border-primary border-opacity-50" 
+                        style="width: 36px; height: 36px; object-fit: cover; transition: all 0.2s ease;">
+                    <span class="ms-2 d-none d-xl-inline text-white small fw-700">@{{ request.user.username }}</span>
                 </a>
             </li>
-            {% endif %}
+
+            <!-- Çıkış Butonu -->
             <li class="nav-item">
-              <a class="btn btn-outline-danger btn-sm px-4 rounded-pill fw-bold" href="/user/logout/">
+              <a class="btn btn-outline-danger btn-sm px-4 rounded-pill fw-700" href="/user/logout/" style="font-size: 0.8rem;">
                 Çıkış
               </a>
             </li>
+
           {% else %}
+            <!-- Giriş Yapmamış Kullanıcı -->
             <li class="nav-item">
-              <a class="nav-link px-3" href="/user/login/">Giriş Yap</a>
+              <a class="nav-link px-3 fw-600" href="/user/login/">Giriş Yap</a>
             </li>
             <li class="nav-item ms-lg-2">
-              <a class="btn btn-danger btn-sm px-4 rounded-pill shadow-sm" href="/user/register/">
+              <a class="btn btn-primary btn-sm px-4 rounded-pill shadow-sm fw-700" href="/user/register/">
                 Kayıt Ol
               </a>
             </li>
@@ -87,44 +101,68 @@
 </nav>
 
 <style>
+  /* Premium Dark Slate Effect */
   .navbar {
-    backdrop-filter: blur(10px);
-    background-color: rgba(33, 37, 41, 0.95) !important;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-  }
-  .nav-link {
+    background: rgba(15, 23, 42, 0.95) !important; /* Tailwind Slate-900 */
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     transition: all 0.3s ease;
-    font-weight: 500;
+    font-family: 'Inter', sans-serif;
   }
+  
+  /* Link Stilleri */
+  .nav-link {
+    color: #e2e8f0 !important; /* Slate-200 */
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+  }
+  
   .nav-link:hover {
-    color: #dc3545 !important;
+    color: #3b82f6 !important; /* Mavi hover */
+    transform: translateY(-1px);
   }
-  /* Profil resmine hover efekti */
+
+  .navbar-brand:hover {
+    opacity: 0.9;
+  }
+
+  /* Profil Resmi Hover */
   .nav-link img:hover {
-    border-color: #dc3545 !important;
-    transform: scale(1.1);
-    transition: 0.3s;
+    border-color: #3b82f6 !important;
+    transform: scale(1.05);
   }
-  .navbar-brand span {
-    letter-spacing: 1px;
-  }
-</style>
-<style>
-  .dropdown {
-    position: relative !important;
-    z-index: 1000 !important;
-  }
-  .dropdown-menu { 
-    position: absolute !important;
-    z-index: 99999999 !important; 
-    background: rgba(255, 255, 255, 0.98) !important; 
+
+  /* Dropdown Özelleştirme (Dark) */
+  .dropdown-menu {
+    background: rgba(15, 23, 42, 0.98) !important;
     backdrop-filter: blur(15px) !important;
-    -webkit-backdrop-filter: blur(15px) !important;
-    border-radius: 18px !important;
-    border: 1px solid rgba(0,0,0,0.1) !important;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.2) !important; 
-    overflow: hidden;
-    right: 0 !important;
-    left: auto !important;
+    border-radius: 16px !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3) !important;
+  }
+  
+  .list-group-item {
+    background: transparent !important;
+    color: #e2e8f0 !important;
+    border-color: rgba(255, 255, 255, 0.05) !important;
+  }
+  .list-group-item:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+  }
+  /* Custom Scrollbar for Notifications */
+  #navbar-notif-list::-webkit-scrollbar {
+    width: 6px;
+  }
+  #navbar-notif-list::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  #navbar-notif-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+  }
+  #navbar-notif-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
   }
 </style>

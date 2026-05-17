@@ -1,173 +1,385 @@
 {% extends "layout.html" %}
+{% load static %}
+
+{% block head %}
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --bg-body: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --radius: 16px;
+            --transition: all 0.3s ease;
+        }
+
+        body { 
+            background-color: var(--bg-body); 
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .fw-800 { font-weight: 800; }
+
+        /* PROFILE CARD (LEFT) */
+        .profile-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+            position: relative;
+        }
+
+        .profile-cover {
+            height: 100px;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        }
+
+        .avatar-wrapper {
+            margin-top: -50px;
+            position: relative;
+            display: inline-block;
+        }
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 4px solid white;
+            object-fit: cover;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .rank-badge-icon {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            border: 2px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* Progress Bar */
+        .xp-progress {
+            height: 6px;
+            border-radius: 100px;
+            background-color: #e2e8f0;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+        .xp-progress-bar {
+            height: 100%;
+            border-radius: 100px;
+            transition: width 0.5s ease;
+        }
+
+        /* STATS PILLS */
+        .stat-pill {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            flex: 1;
+        }
+        .stat-pill-value {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+        .stat-pill-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        /* RIGHT CARDS */
+        .content-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+        }
+
+        .card-title-premium {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 12px;
+        }
+
+        /* Activity List */
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 0;
+            border-bottom: 1px dashed var(--border-color);
+        }
+        .activity-item:last-child { border-bottom: none; }
+        
+        .activity-thumb {
+            width: 45px;
+            height: 45px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        /* Popular Article Card */
+        .pop-article-card {
+            background: linear-gradient(to right, #f8fafc, #ffffff);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+    </style>
+{% endblock head %}
 
 {% block body %}
 <div class="container mt-5">
-    <div class="row">
-        <div class="col-lg-4 col-md-5">
-            <div class="card shadow-lg border-0 text-center p-4 mb-4">
-                <div class="position-relative d-inline-block mx-auto">
+    <div class="row g-4">
+        
+        <!-- ================= SOL KOLON: PROFİL KARTI ================= -->
+        <div class="col-lg-4">
+            <div class="profile-card text-center pb-4">
+                <!-- Kapak Görseli (Gradient) -->
+                <div class="profile-cover"></div>
+                
+                <!-- Avatar -->
+                <div class="avatar-wrapper">
                     {% if user_profile.profile and user_profile.profile.image %}
-                        <img src="{{ user_profile.profile.image.url }}" class="rounded-circle img-thumbnail shadow" style="width: 160px; height: 160px; object-fit: cover;">
+                        <img src="{{ user_profile.profile.image.url }}" class="profile-avatar">
                     {% else %}
-                        <div class="rounded-circle img-thumbnail shadow d-flex align-items-center justify-content-center bg-light" style="width: 160px; height: 160px;">
-                            <i class="fas fa-user fa-4x text-muted"></i>
-                        </div>
+                        <img src="{% static 'img/default-user.png' %}" class="profile-avatar">
                     {% endif %}
                     
+                    <!-- Rank İkonu -->
                     {% if user_profile.profile %}
-                    <span class="position-absolute bottom-0 end-0 badge rounded-pill p-2 shadow" {% if user_profile.profile.rank_info %}style="background-color: {{ user_profile.profile.rank_info.color }};"{% endif %}>
-                        <i class="fas {{ user_profile.profile.rank_info.icon }}"></i>
-                    </span>
+                    <div class="rank-badge-icon" style="background-color: {{ user_profile.profile.rank_info.color }};">
+                        <i class="fas {{ user_profile.profile.rank_info.icon }} fa-sm"></i>
+                    </div>
                     {% endif %}
                 </div>
                 
-                <h3 class="mt-3 fw-bold mb-0">
-                    {{ user_profile.get_full_name|default:user_profile.username }}
-                </h3>
-                <p class="text-muted small">@{{ user_profile.username }}</p>
+                <!-- İsim ve Kullanıcı Adı -->
+                <div class="px-4 mt-2">
+                    <h4 class="fw-800 mb-0">{{ user_profile.get_full_name|default:user_profile.username }}</h4>
+                    <div class="text-muted small mb-3">@{{ user_profile.username }}</div>
 
-                {% if user_profile.profile %}
-                    <div class="badge p-2 mb-3 w-100" 
-                        {% if user_profile.profile.rank_info %}style="background-color: {{ user_profile.profile.rank_info.color }}22; 
-                                color: {{ user_profile.profile.rank_info.color }}; 
-                                border: 1px solid {{ user_profile.profile.rank_info.color }};"{% endif %}>
-                        <span class="fw-bold">{{ user_profile.profile.rank_info.title }}</span>
-                    </div>
+                    <!-- Rank Bilgisi ve Progress -->
+                    {% if user_profile.profile %}
+                        <div class="badge p-2 mb-2 w-100" style="background-color: {{ user_profile.profile.rank_info.color }}22; color: {{ user_profile.profile.rank_info.color }}; border: 1px solid {{ user_profile.profile.rank_info.color }}55;">
+                            <span class="fw-800" style="font-size: 0.75rem;">{{ user_profile.profile.rank_info.title|upper }}</span>
+                        </div>
 
-                    <div class="progress mb-2" style="height: 8px;">
-                        <div class="progress-bar progress-bar-striped progress-bar-animated" {% if user_profile.profile %}style="width: {{ user_profile.profile.total_xp|default:0 }}%; background-color: {{ user_profile.profile.rank_info.color }};"{% else %}style="width: 0%;"{% endif %}></div>
-                    </div>
-                    <small class="text-muted d-block mb-3">{{ user_profile.profile.total_xp|default:0 }} XP Puanı</small>
-                {% else %}
-                    <div class="badge p-2 mb-3 w-100 bg-light text-muted border">
-                        <span class="fw-bold">YENİ ÜYE</span>
-                    </div>
-                {% endif %}
-
-                <hr>
-                <p class="text-secondary small italic px-2">
-                    <i class="fas fa-quote-left me-1"></i> {{ user_profile.profile.bio|default:"Sistem analizi bekleniyor... (Biyografi boş)" }}
-                </p>
-                
-                <div class="d-flex justify-content-center gap-3 mt-3">
-                    {% if user_profile.profile.github %}
-                        <a href="{{ user_profile.profile.github }}" target="_blank" class="btn btn-outline-dark btn-sm rounded-circle"><i class="fab fa-github"></i></a>
+                        <!-- XP Bar -->
+                        <div class="xp-progress">
+                            <div class="xp-progress-bar" style="width: {{ user_profile.profile.total_xp|default:0 }}%; background-color: {{ user_profile.profile.rank_info.color }};"></div>
+                        </div>
+                        <div class="d-flex justify-content-between text-muted" style="font-size: 0.65rem;">
+                            <span class="fw-700">{{ user_profile.profile.total_xp|default:0 }} XP</span>
+                            <span class="fw-700">Level Up</span>
+                        </div>
                     {% endif %}
-                    {% if user_profile.profile.linkedin %}
-                        <a href="{{ user_profile.profile.linkedin }}" target="_blank" class="btn btn-outline-primary btn-sm rounded-circle"><i class="fab fa-linkedin-in"></i></a>
+
+                    <hr class="my-3" style="border-color: #f1f5f9;">
+
+                    <!-- Biyografi -->
+                    <p class="text-secondary small mb-3 px-2">
+                        <i class="fas fa-quote-left text-muted me-1"></i>
+                        {{ user_profile.profile.bio|default:"Bu yazar henüz bir biyografi eklememiş." }}
+                    </p>
+                    
+                    <!-- Sosyal Medya -->
+                    <div class="d-flex justify-content-center gap-2 mb-3">
+                        {% if user_profile.profile.github %}
+                            <a href="{{ user_profile.profile.github }}" target="_blank" class="btn btn-light btn-sm rounded-circle" style="width:32px; height:32px; display:inline-flex; align-items:center; justify-content:center;"><i class="fab fa-github"></i></a>
+                        {% endif %}
+                        {% if user_profile.profile.linkedin %}
+                            <a href="{{ user_profile.profile.linkedin }}" target="_blank" class="btn btn-light btn-sm rounded-circle text-primary" style="width:32px; height:32px; display:inline-flex; align-items:center; justify-content:center;"><i class="fab fa-linkedin-in"></i></a>
+                        {% endif %}
+                    </div>
+
+                    <!-- Mesaj Gönder Butonu -->
+                    {% if request.user.is_authenticated and user_profile != request.user %}
+                    <div class="mt-3">
+                        <a href="{% url 'user:messages_page' %}?user_id={{ user_profile.id }}" class="btn btn-primary w-100 rounded-pill shadow-sm fw-700" style="font-size: 0.85rem;">
+                            <i class="fas fa-paper-plane me-2"></i>Mesaj Gönder
+                        </a>
+                    </div>
                     {% endif %}
                 </div>
-
-                {% if request.user.is_authenticated and user_profile != request.user %}
-                <div class="mt-4">
-                    <a href="{% url 'user:messages_page' %}?user_id={{ user_profile.id }}" 
-                       class="btn btn-primary w-100 rounded-pill shadow-sm py-2">
-                        <i class="fas fa-paper-plane me-2"></i>Mesaj Gönder
-                    </a>
-                </div>
-                {% endif %}
             </div>
 
+            <!-- EKSTRA ÖZELLİK: TOPLAM SAYAÇLAR -->
+            <div class="d-flex gap-2 mt-3">
+                <div class="stat-pill">
+                    <div class="stat-pill-value">{{ total_views }}</div>
+                    <div class="stat-pill-label">Okunma</div>
+                </div>
+                <div class="stat-pill">
+                    <div class="stat-pill-value">{{ total_likes }}</div>
+                    <div class="stat-pill-label">Beğeni</div>
+                </div>
+                <div class="stat-pill">
+                    <div class="stat-pill-value">{{ user_profile.article_set.count }}</div>
+                    <div class="stat-pill-label">Yazı</div>
+                </div>
+            </div>
         </div>
 
-        <div class="col-lg-8 col-md-7">
-            <div class="card shadow-sm border-0 p-4 mb-4">
-                <h5 class="fw-bold border-bottom pb-2 mb-3 text-primary">
-                    <i class="fas fa-id-card me-2"></i>Kişisel Bilgiler
+        <!-- ================= SAĞ KOLON: BİLGİLER VE AKTİVİTELER ================= -->
+        <div class="col-lg-8">
+            
+            <!-- Kişisel Bilgiler -->
+            <div class="content-card">
+                <h5 class="card-title-premium">
+                    <i class="fas fa-id-card text-primary"></i>Kişisel Bilgiler
                 </h5>
                 <div class="row g-3">
                     <div class="col-sm-6">
-                        <label class="text-muted small d-block">Ad</label>
-                        <span class="fw-medium">{{ user_profile.first_name|default:"-" }}</span>
+                        <label class="text-muted small d-block mb-1">Ad</label>
+                        <span class="fw-700 text-dark">{{ user_profile.first_name|default:"-" }}</span>
                     </div>
                     <div class="col-sm-6">
-                        <label class="text-muted small d-block">Soyad</label>
-                        <span class="fw-medium">{{ user_profile.last_name|default:"-" }}</span>
+                        <label class="text-muted small d-block mb-1">Soyad</label>
+                        <span class="fw-700 text-dark">{{ user_profile.last_name|default:"-" }}</span>
                     </div>
                 </div>
             </div>
 
-            <div class="card shadow-sm border-0 p-4 mb-4">
-                <h5 class="fw-bold border-bottom pb-2 mb-3 text-primary">
-                    <i class="fas fa-server me-2"></i>Sistem Bilgileri
+            <!-- Sistem Bilgileri -->
+            <div class="content-card">
+                <h5 class="card-title-premium">
+                    <i class="fas fa-server text-primary"></i>Sistem Bilgileri
                 </h5>
                 <div class="row g-3">
                     <div class="col-sm-6">
-                        <label class="text-muted small d-block">E-Posta Adresi</label>
-                        <span class="fw-medium">{{ user_profile.email|default:"Tanımlanmadı" }}</span>
+                        <label class="text-muted small d-block mb-1">E-Posta Adresi</label>
+                        <span class="fw-700 text-dark">{{ user_profile.email|default:"Tanımlanmadı" }}</span>
                     </div>
                     <div class="col-sm-6">
-                        <label class="text-muted small d-block">Katılım Tarihi</label>
-                        <span class="fw-medium text-success">{{ user_profile.date_joined|date:"d F Y, H:i" }}</span>
+                        <label class="text-muted small d-block mb-1">Katılım Tarihi</label>
+                        <span class="fw-700 text-success">{{ user_profile.date_joined|date:"d F Y" }}</span>
                     </div>
                     <div class="col-sm-6">
-                        <label class="text-muted small d-block">Son Oturum (Last Login)</label>
-                        <span class="fw-medium text-danger">{{ user_profile.last_login|date:"d F Y, H:i" }}</span>
+                        <label class="text-muted small d-block mb-1">Üyelik Tipi</label>
+                        {% if user_profile.is_superuser %}
+                            <span class="badge bg-dark shadow-sm"><i class="fas fa-crown text-warning me-1"></i> Yönetici</span>
+                        {% elif user_profile.is_staff %}
+                            <span class="badge bg-primary shadow-sm"><i class="fas fa-shield-alt me-1"></i> Moderatör</span>
+                        {% else %}
+                            <span class="badge bg-info text-white shadow-sm"><i class="fas fa-user me-1"></i> Standart Üye</span>
+                        {% endif %}
                     </div>
-                    <div class="row mt-3">
-                        <div class="col-sm-6">
-                            <label class="text-muted small d-block">Üyelik Tipi</label>
-                            
-                            {% if user_profile.is_superuser %}
-                                <span class="badge bg-dark shadow-sm">
-                                    <i class="fas fa-crown text-warning me-1"></i> Yönetici
-                                </span>
-                            {% elif user_profile.is_staff %}
-                                <span class="badge bg-primary shadow-sm">
-                                    <i class="fas fa-shield-alt me-1"></i> Moderatör
-                                </span>
-                            {% else %}
-                                <span class="badge bg-info text-white shadow-sm">
-                                    <i class="fas fa-user me-1"></i> Standart Üye
-                                </span>
-                            {% endif %}
-                        </div>
-
-                        <div class="col-sm-6">
-                            <label class="text-muted small d-block">Hesap Durumu</label>
-                            {% if user_profile.is_active %}
-                                <span class="badge bg-success">Aktif</span>
-                            {% else %}
-                                <span class="badge bg-danger">Hesap Askıya Alınmış</span>
-                            {% endif %}
-                        </div>
+                    <div class="col-sm-6">
+                        <label class="text-muted small d-block mb-1">Hesap Durumu</label>
+                        {% if user_profile.is_active %}
+                            <span class="badge bg-success">Aktif</span>
+                        {% else %}
+                            <span class="badge bg-danger">Pasif</span>
+                        {% endif %}
                     </div>
                 </div>
             </div>
 
-            <div class="card shadow-sm border-0 p-4">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h5 class="fw-bold mb-0 text-primary"><i class="fas fa-stream me-2"></i>Son Aktiviteler</h5>
-                    <div>
-                        <span class="badge bg-light text-dark border">Makale: {{ user_profile.article_set.count }}</span>
-                        <span class="badge bg-light text-dark border">Yorum: {{ user_profile.comment_set.count }}</span>
-                    </div>
-                </div>
-                
-                <div class="list-group list-group-flush">
-                    {% for article in user_profile.article_set.all|dictsortreversed:"created_date"|slice:":5" %}
-                    <div class="list-group-item d-flex justify-content-between align-items-center px-0 bg-transparent">
-                        <div>
-                            <i class="far fa-file-alt me-2 text-primary"></i>
-                            <a href="{% url 'article:detail' article.slug %}" class="text-decoration-none text-dark fw-medium">
-                                {{ article.title }}
+            <!-- EKSTRA ÖZELLİK: EN POPÜLER MAKALE -->
+            {% if most_popular_article %}
+            <div class="content-card">
+                <h5 class="card-title-premium">
+                    <i class="fas fa-star text-warning"></i>En Popüler Yazısı
+                </h5>
+                <div class="pop-article-card">
+                    {% if most_popular_article.article_image %}
+                        <img src="{{ most_popular_article.article_image.url }}" class="activity-thumb">
+                    {% else %}
+                        <div class="bg-dark d-flex align-items-center justify-content-center activity-thumb">
+                            <i class="fas fa-image text-white-50"></i>
+                        </div>
+                    {% endif %}
+                    <div class="flex-grow-1">
+                        <h6 class="fw-800 mb-1">
+                            <a href="{% url 'article:detail' most_popular_article.slug %}" class="text-decoration-none text-dark hover-primary transition">
+                                {{ most_popular_article.title }}
                             </a>
+                        </h6>
+                        <div class="text-muted small d-flex gap-3">
+                            <span><i class="far fa-eye me-1"></i>{{ most_popular_article.read_count }} okunma</span>
+                            <span><i class="far fa-heart me-1"></i>{{ most_popular_article.likes.count }} beğeni</span>
                         </div>
-                        <small class="text-muted">{{ article.created_date|timesince }} önce</small>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- SON AKTİVİTELER -->
+            <div class="content-card">
+                <h5 class="card-title-premium">
+                    <i class="fas fa-stream text-primary"></i>Son Yazıları
+                </h5>
+                
+                <div class="d-flex flex-column">
+                    {% for article in user_profile.article_set.all|dictsortreversed:"created_date"|slice:":5" %}
+                    <div class="activity-item">
+                        {% if article.article_image %}
+                            <img src="{{ article.article_image.url }}" class="activity-thumb">
+                        {% else %}
+                            <div class="bg-dark d-flex align-items-center justify-content-center activity-thumb">
+                                <i class="fas fa-image text-white-50"></i>
+                            </div>
+                        {% endif %}
+                        <div class="flex-grow-1">
+                            <h6 class="fw-700 mb-0" style="font-size: 0.9rem;">
+                                <a href="{% url 'article:detail' article.slug %}" class="text-decoration-none text-dark hover-primary transition">
+                                    {{ article.title }}
+                                </a>
+                            </h6>
+                            <small class="text-muted" style="font-size: 0.75rem;">{{ article.created_date|timesince }} önce</small>
+                        </div>
+                        <div class="text-end text-muted small">
+                            <span><i class="far fa-eye me-1"></i>{{ article.read_count }}</span>
+                        </div>
                     </div>
                     {% empty %}
-                    <p class="text-muted">Henüz veri girişi yapılmadı.</p>
+                    <p class="text-muted small mb-0">Henüz bir makale yayınlanmamış.</p>
                     {% endfor %}
                 </div>
 
                 {% if request.user == user_profile %}
-                <div class="mt-4">
-                    <a href="{% url 'user:profile_edit' %}" class="btn btn-outline-secondary px-4 py-2 rounded-pill">
+                <div class="mt-4 text-center">
+                    <a href="{% url 'user:profile_edit' %}" class="btn btn-outline-secondary px-4 py-2 rounded-pill fw-700" style="font-size: 0.85rem;">
                         <i class="fas fa-edit me-2"></i>Profili Düzenle
                     </a>
                 </div>
                 {% endif %}
             </div>
+
         </div>
     </div>
 </div>

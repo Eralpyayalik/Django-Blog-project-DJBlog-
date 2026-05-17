@@ -2,530 +2,438 @@
 {% load static %}
 
 {% block head %}
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #4f46e5;
-            --primary-hover: #4338ca;
-            --accent: #f43f5e;
-            --bg-body: #f1f5f9;
-            --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-            --card-hover-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            --transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-            --glass-bg: rgba(255, 255, 255, 0.85);
-            --glass-border: rgba(255, 255, 255, 0.5);
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --bg-body: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --radius: 12px;
+            --transition: all 0.2s ease;
         }
 
         body { 
             background-color: var(--bg-body); 
             font-family: 'Inter', sans-serif;
-            color: #1e293b;
-            background-image: radial-gradient(circle at top right, rgba(79, 70, 229, 0.05) 0%, transparent 50%),
-                              radial-gradient(circle at bottom left, rgba(244, 63, 94, 0.05) 0%, transparent 50%);
-            background-attachment: fixed;
+            color: var(--text-main);
         }
 
-        h1, h2, h3, h4, h5, h6, .display-6 {
+        h1, h2, h3, h4, h5, h6 {
             font-family: 'Outfit', sans-serif;
         }
 
         .fw-800 { font-weight: 800; }
-        .fw-900 { font-weight: 900; }
 
-        /* Bento Grid Hero */
-        .bento-hero {
-            display: grid;
-            grid-template-columns: 1.5fr 1fr 1fr;
-            grid-template-rows: 250px 250px;
-            gap: 24px;
-            margin-bottom: 50px;
+        /* Left & Right Sidebars */
+        .sticky-sidebar {
+            position: sticky;
+            top: 90px;
         }
 
-        .bento-item {
-            position: relative;
-            border-radius: 28px;
-            overflow: hidden;
-            box-shadow: var(--card-shadow);
-            transition: var(--transition);
-            background: #000;
+        .widget-box {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            padding: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
         }
 
-        .bento-item:hover { 
-            transform: translateY(-8px);
-            box-shadow: var(--card-hover-shadow);
-        }
-
-        .bento-item-big { grid-column: span 2; grid-row: span 2; }
-        .bento-item-small { grid-column: span 1; grid-row: span 1; }
-
-        .bento-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            filter: brightness(0.65) saturate(1.2);
-            transition: var(--transition);
-        }
-
-        .bento-item:hover .bento-img {
-            transform: scale(1.05);
-            filter: brightness(0.5);
-        }
-
-        .bento-content {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 35px;
-            background: linear-gradient(transparent, rgba(15, 23, 42, 0.95) 90%);
-            color: white;
-            z-index: 2;
-        }
-
-        .bento-item-small .bento-content {
-            padding: 25px;
-        }
-
-        /* Category Scroll Bar */
-        .category-scroll {
+        .widget-title {
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
             display: flex;
-            gap: 15px;
-            overflow-x: auto;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-            scrollbar-width: none; /* Firefox */
+            align-items: center;
+            gap: 6px;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 8px;
         }
-        .category-scroll::-webkit-scrollbar { display: none; } /* Chrome */
 
-        .cat-pill {
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--glass-border);
-            padding: 12px 28px;
-            border-radius: 100px;
-            font-weight: 600;
-            color: #475569;
-            white-space: nowrap;
-            transition: var(--transition);
+        /* Compact Table Items for Sidebars */
+        .table-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px dashed var(--border-color);
             text-decoration: none;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+            font-size: 0.85rem;
+        }
+        .table-item:last-child { border-bottom: none; padding-bottom: 0; }
+        
+        .rank-num {
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: #94a3b8;
+            width: 20px;
+            text-align: center;
         }
 
-        .cat-pill:hover, .cat-pill.active {
-            background: var(--primary);
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(79, 70, 229, 0.3);
-            border-color: transparent;
-        }
-
-        /* Premium Article Cards */
+        /* Center Grid Article Cards */
         .article-card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            border-radius: 28px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
             overflow: hidden;
-            border: 1px solid var(--glass-border);
-            box-shadow: var(--card-shadow);
-            transition: var(--transition);
             height: 100%;
             display: flex;
             flex-direction: column;
+            transition: var(--transition);
         }
-
         .article-card:hover {
-            transform: translateY(-10px) scale(1.01);
-            box-shadow: var(--card-hover-shadow);
-            border-color: rgba(79, 70, 229, 0.2);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.05);
+            border-color: rgba(59, 130, 246, 0.2);
         }
 
-        .article-card-img-wrapper {
+        .article-img-wrapper {
             position: relative;
-            height: 220px;
+            height: 140px;
             overflow: hidden;
-            margin: 10px 10px 0 10px;
-            border-radius: 20px;
         }
-
-        .article-card-img {
+        .article-img {
             width: 100%;
             height: 100%;
             object-fit: cover;
             transition: var(--transition);
         }
-
-        .article-card:hover .article-card-img {
-            transform: scale(1.08);
+        .article-card:hover .article-img {
+            transform: scale(1.03);
         }
-
+        
         .article-badge {
             position: absolute;
-            top: 15px;
-            left: 15px;
-            background: rgba(255,255,255,0.9);
-            backdrop-filter: blur(5px);
-            padding: 6px 14px;
-            border-radius: 100px;
-            font-size: 0.75rem;
+            top: 10px;
+            left: 10px;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 0.65rem;
             font-weight: 800;
-            color: var(--primary);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-transform: uppercase;
         }
+        .badge-color-1 { background: rgba(59, 130, 246, 0.9); color: white; }
+        .badge-color-2 { background: rgba(239, 68, 68, 0.9); color: white; }
+        .badge-color-3 { background: rgba(34, 197, 94, 0.9); color: white; }
+        .badge-color-4 { background: rgba(245, 158, 11, 0.9); color: white; }
+        .badge-color-5 { background: rgba(147, 51, 234, 0.9); color: white; }
+        .badge-color-gray { background: rgba(148, 163, 184, 0.9); color: white; }
 
-        .article-card-body {
-            padding: 25px;
+        .article-body {
+            padding: 16px;
             flex-grow: 1;
             display: flex;
             flex-direction: column;
         }
-
         .article-title {
-            font-size: 1.3rem;
-            line-height: 1.4;
+            font-size: 0.95rem;
             font-weight: 800;
+            line-height: 1.4;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+        .article-summary {
+            font-size: 0.725rem;
+            color: var(--text-muted);
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.4;
             margin-bottom: 12px;
-            color: #0f172a;
-            transition: color 0.3s;
+            height: 4.2em;
         }
-
-        .article-card:hover .article-title {
-            color: var(--primary);
-        }
-
-        /* Sidebar Widgets */
-        .modern-widget {
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            border-radius: 28px;
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: var(--card-shadow);
-            border: 1px solid var(--glass-border);
-        }
-
-        .widget-header {
+        .article-footer {
+            margin-top: auto;
+            padding-top: 8px;
+            border-top: 1px solid var(--border-color);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 2px dashed #e2e8f0;
+            font-size: 0.8rem;
         }
 
-        .widget-title {
-            font-size: 1.1rem;
-            font-weight: 800;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: #0f172a;
-        }
-
-        .icon-box {
-            width: 36px;
-            height: 36px;
-            background: #f1f5f9;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.95rem;
-        }
-
-        /* Premium Search Box */
-        .premium-search {
-            background: #f8fafc;
-            border-radius: 100px;
-            padding: 6px;
-            transition: var(--transition);
-            border: 2px solid #e2e8f0;
-        }
-
-        .premium-search:focus-within {
-            background: white;
-            border-color: var(--primary);
-            box-shadow: 0 8px 25px rgba(79, 70, 229, 0.15);
-        }
-
-        .premium-search input {
-            border: none !important;
-            box-shadow: none !important;
-            background: transparent;
-            padding: 10px 20px;
-            font-weight: 500;
-            width: 100%;
-            outline: none;
-        }
-
-        .search-btn {
-            background: var(--primary);
-            color: white;
-            min-width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: none;
-            transition: var(--transition);
-        }
-
-        .search-btn:hover {
-            transform: scale(1.1) rotate(5deg);
-            background: var(--primary-hover);
-        }
-
-        /* Leaderboard Table */
-        .leaderboard-item {
-            display: flex;
-            align-items: center;
-            padding: 12px 15px;
-            border-radius: 16px;
-            margin-bottom: 10px;
-            background: #f8fafc;
-            transition: var(--transition);
-            border: 1px solid transparent;
-        }
-
-        .leaderboard-item:hover {
-            background: white;
-            border-color: var(--primary);
-            transform: translateX(5px);
-            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.05);
-        }
-
-        .rank-number {
-            font-size: 1.2rem;
-            font-weight: 900;
-            color: #cbd5e1;
-            width: 25px;
-        }
-
-        .leaderboard-item:nth-child(1) .rank-number { color: #fbbf24; }
-        .leaderboard-item:nth-child(2) .rank-number { color: #94a3b8; }
-        .leaderboard-item:nth-child(3) .rank-number { color: #b45309; }
-
-        /* Load More Button */
         #load-more-btn {
-            background: var(--primary);
-            color: white;
-            padding: 16px 45px;
+            background: white;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 8px 24px;
             border-radius: 100px;
             font-weight: 700;
-            border: none;
+            font-size: 0.85rem;
             transition: var(--transition);
-            box-shadow: 0 10px 30px rgba(79, 70, 229, 0.3);
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
         }
-
         #load-more-btn:hover {
-            background: var(--primary-hover);
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(79, 70, 229, 0.4);
+            background: #f1f5f9;
+            border-color: var(--primary);
         }
 
-        @media (max-width: 992px) {
-            .bento-hero { grid-template-columns: 1fr; grid-template-rows: auto; }
-            .bento-item-big { grid-column: span 1; height: 400px; }
-            .bento-item-small { height: 250px; }
+        .like-action-btn {
+            cursor: pointer;
+            transition: transform 0.2s ease;
         }
+        .like-action-btn:hover {
+            transform: scale(1.1);
+        }
+
     </style>
 {% endblock head %}
 
 {% block body %}
-<div class="container-fluid px-lg-5 mt-5">
-    
-    <!-- Hero Section -->
-    <div class="bento-hero">
-        {% if latest_article %}
-        <div class="bento-item bento-item-big">
-            {% if latest_article.article_image %}
-                <img src="{{ latest_article.article_image.url }}" class="bento-img">
-            {% endif %}
-            <div class="bento-content">
-                <span class="badge bg-danger rounded-pill mb-3 px-3 py-2 fw-bold" style="font-size: 0.75rem;"><i class="fas fa-bolt me-1"></i> FLAŞ HABER</span>
-                <h2 class="display-4 fw-900 mb-3" style="line-height: 1.1;">
-                    <a href="{% url 'article:detail' latest_article.slug %}" class="text-white text-decoration-none stretched-link">
-                        {{ latest_article.title }}
-                    </a>
-                </h2>
-                <p class="opacity-75 d-none d-md-block fs-6 w-75">{{ latest_article.content|safe|striptags|truncatechars:150 }}</p>
-                <div class="d-flex align-items-center gap-3 mt-4">
-                    <img src="{{ latest_article.author.profile.image.url|default:'/static/img/default-user.png' }}" class="rounded-circle border border-white border-2 shadow" style="width:45px; height:45px; object-fit:cover;">
-                    <div>
-                        <div class="fw-bold fs-6">{{ latest_article.author.username }}</div>
-                        <div class="small text-white-50"><i class="far fa-clock me-1"></i> {{ latest_article.created_date|date:"d M Y" }}</div>
+</div> <!-- HACK -->
+
+<div class="container-fluid mt-4" style="max-width: 1600px; margin: 0 auto; padding: 0 20px;">
+    <div class="row g-3">
+        
+        <!-- ================= SOL KOLON (col-lg-2) ================= -->
+        <div class="col-lg-2 d-none d-lg-block">
+            <div class="sticky-sidebar">
+                
+                <!-- Son Eklenenler -->
+                <div class="widget-box">
+                    <h6 class="widget-title"><i class="fas fa-bolt text-warning"></i> Son Eklenenler</h6>
+                    <div class="d-flex flex-column">
+                        {% for art in articles|slice:":3" %}
+                        <a href="{% url 'article:detail' art.slug %}" class="table-item hover-primary transition">
+                            {% if art.article_image %}
+                                <img src="{{ art.article_image.url }}" class="rounded" style="width:70px; height:50px; object-fit:cover;">
+                            {% else %}
+                                <div class="bg-dark d-flex align-items-center justify-content-center rounded" style="width:70px; height:50px;">
+                                    <i class="fas fa-image text-white-50" style="font-size:0.8rem;"></i>
+                                </div>
+                            {% endif %}
+                            <div class="flex-grow-1 overflow-hidden">
+                                <div class="fw-bold text-dark text-truncate" style="font-size:0.75rem;">{{ art.title }}</div>
+                                <div class="text-muted" style="font-size:0.65rem;">{{ art.created_date|timesince }} önce</div>
+                            </div>
+                        </a>
+                        {% endfor %}
                     </div>
                 </div>
-            </div>
-        </div>
-        {% endif %}
 
-        {% for pop in popular_articles|slice:":2" %}
-        <div class="bento-item bento-item-small">
-            {% if pop.article_image %}
-                <img src="{{ pop.article_image.url }}" class="bento-img">
-            {% endif %}
-            <div class="bento-content p-4">
-                <span class="badge bg-white text-dark rounded-pill mb-2 px-2" style="font-size: 0.65rem;">#TREND</span>
-                <h4 class="fw-800 mb-0" style="line-height: 1.3;">
-                    <a href="{% url 'article:detail' pop.slug %}" class="text-white text-decoration-none stretched-link">
-                        {{ pop.title }}
-                    </a>
-                </h4>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-
-    <!-- Category Filter Bar -->
-    <div class="category-scroll">
-        <a href="{% url 'index' %}" class="cat-pill active"><i class="fas fa-globe me-2"></i>Tümü</a>
-        {% for cat in categories %}
-            <a href="{% url 'article:articles' %}?category={{ cat.slug }}" class="cat-pill">{{ cat.name }}</a>
-        {% endfor %}
-    </div>
-
-    <div class="row">
-        <!-- Main Feed -->
-        <div class="col-lg-8">
-            <div class="d-flex align-items-center justify-content-between mb-4">
-                <h3 class="fw-900 m-0 text-dark"><i class="fas fa-layer-group me-2 text-primary"></i>Güncel Akış</h3>
-                <div class="badge bg-dark rounded-pill px-3 py-2">Toplam <span id="article-count">{{ articles|length }}</span> İçerik</div>
-            </div>
-            
-            <div class="row g-4" id="article-container">
-                {% for article in articles %}
-                    {% if article.id != latest_article.id %}
-                    <div class="col-md-6 article-item">
-                        <div class="article-card">
-                            <div class="article-card-img-wrapper">
-                                {% if article.article_image %}
-                                    <img src="{{ article.article_image.url }}" class="article-card-img">
-                                {% else %}
-                                    <div class="bg-dark d-flex align-items-center justify-content-center h-100">
-                                        <i class="fas fa-image fa-2x text-white-50"></i>
-                                    </div>
-                                {% endif %}
-                                <div class="article-badge">
-                                    {{ article.category.name|default:"Genel" }}
-                                </div>
+                <!-- En Çok Tartışılanlar -->
+                <div class="widget-box">
+                    <h6 class="widget-title"><i class="fas fa-comments text-success"></i> Çok Tartışılanlar</h6>
+                    <div class="d-flex flex-column">
+                        {% for top in most_commented_articles|slice:":5" %}
+                        <a href="{% url 'article:detail' top.slug %}" class="table-item hover-primary transition">
+                            <div class="flex-grow-1 overflow-hidden">
+                                <div class="fw-bold text-dark mb-1 text-truncate" style="font-size:0.75rem;">{{ top.title }}</div>
+                                <div class="text-muted" style="font-size:0.65rem;">{{ top.category.name|default:"Haber" }}</div>
                             </div>
-                            <div class="article-card-body">
-                                <h4 class="article-title">
-                                    <a href="{% url 'article:detail' article.slug %}" class="text-decoration-none text-inherit">
-                                        {{ article.title }}
-                                    </a>
-                                </h4>
-                                <p class="text-muted small mb-4 flex-grow-1">{{ article.content|safe|striptags|truncatechars:110 }}</p>
-                                
-                                <div class="mt-auto d-flex align-items-center justify-content-between pt-3 border-top border-light">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <img src="{{ article.author.profile.image.url|default:'/static/img/default-user.png' }}" class="rounded-circle shadow-sm" style="width:32px; height:32px; object-fit:cover;">
-                                        <span class="small fw-700 text-dark">{{ article.author.username }}</span>
+                            <div class="badge bg-success bg-opacity-10 text-success rounded-pill" style="font-size:0.7rem;">
+                                <i class="fas fa-comment"></i> {{ top.comments.count }}
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ================= ORTA KOLON: MAKALELER (col-lg-8) ================= -->
+        <div class="col-lg-8">
+            
+            <div class="d-flex align-items-center justify-content-between mb-3 px-1">
+                <h5 class="fw-800 m-0"><i class="fas fa-layer-group text-primary me-2"></i> Keşfet</h5>
+                <div class="text-muted small fw-600">Toplam {{ articles|length }} Makale</div>
+            </div>
+
+            <!-- 3'lü Kart Grid'i -->
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3" id="article-container">
+                {% for article in articles %}
+                <div class="col article-item">
+                    <div class="article-card">
+                        <div class="article-img-wrapper">
+                            {% if article.article_image %}
+                                <img src="{{ article.article_image.url }}" class="article-img">
+                            {% else %}
+                                <div class="bg-dark d-flex align-items-center justify-content-center h-100">
+                                    <i class="fas fa-image fa-2x text-white-50"></i>
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Sabit Kategori Renkleri (Görsele Göre Güncellendi) -->
+                            {% if "ürün" in article.category.name|lower or "urun" in article.category.name|lower %}
+                                <div class="article-badge badge-color-1">Ürün İnceleme</div>
+                            {% elif "tweak" in article.category.name|lower or "performans" in article.category.name|lower %}
+                                <div class="article-badge badge-color-2">Tweak & Perf.</div>
+                            {% elif "oyun" in article.category.name|lower %}
+                                <div class="article-badge badge-color-3">Oyun Dünyası</div>
+                            {% elif "film" in article.category.name|lower or "dizi" in article.category.name|lower %}
+                                <div class="article-badge badge-color-5">Film & Dizi</div>
+                            {% elif "akış" in article.category.name|lower or "stream" in article.category.name|lower %}
+                                <div class="article-badge badge-color-4">Akış (Stream)</div>
+                            {% else %}
+                                <div class="article-badge badge-color-gray">{{ article.category.name|default:"Genel" }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="article-body">
+                            <h4 class="article-title">
+                                <a href="{% url 'article:detail' article.slug %}" class="text-decoration-none text-dark hover-primary transition">
+                                    {{ article.title }}
+                                </a>
+                            </h4>
+                            
+                            <div class="article-summary">
+                                {{ article.content|striptags|safe|truncatewords:20 }}
+                            </div>
+
+                            <div class="article-footer">
+                                <div class="d-flex align-items-center gap-2">
+                                    <img src="{{ article.author.profile.image.url|default:'/static/img/default-user.png' }}" class="rounded-circle" style="width:28px; height:28px; object-fit:cover;">
+                                    <div>
+                                        <div class="fw-700 text-dark" style="font-size:0.8rem;">{{ article.author.username }}</div>
+                                        <div class="text-muted" style="font-size:0.65rem;">{{ article.created_date|timesince }} önce</div>
                                     </div>
-                                    <div class="d-flex gap-3 text-muted small fw-600">
-                                        <span><i class="far fa-heart me-1"></i>{{ article.likes.count }}</span>
-                                        <span><i class="far fa-comment me-1"></i>{{ article.comments.count }}</span>
-                                    </div>
+                                </div>
+                                <div class="d-flex gap-2 text-muted fw-600">
+                                    <span class="like-action-btn" data-article-id="{{ article.id }}">
+                                        <i class="{% if request.user in article.likes.all %}fas{% else %}far{% endif %} fa-heart text-danger"></i> 
+                                        <span class="like-count">{{ article.likes.count }}</span>
+                                    </span>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    {% endif %}
+                </div>
                 {% endfor %}
             </div>
 
             {% if page_obj.has_next %}
-            <div class="text-center my-5 pt-3">
+            <div class="text-center mt-4 mb-5">
                 <button id="load-more-btn" data-next-page="{{ page_obj.next_page_number }}">
-                    Daha Fazla Keşfet <i class="fas fa-arrow-down ms-1"></i>
+                    <i class="fas fa-chevron-down me-2"></i> Daha Fazla
                 </button>
             </div>
             {% endif %}
         </div>
 
-        <!-- Sidebar -->
-        <div class="col-lg-4">
-            
-            <!-- Modern Search -->
-            <div class="modern-widget">
-                <div class="widget-header">
-                    <h6 class="widget-title"><div class="icon-box text-primary"><i class="fas fa-search"></i></div> Keşfet</h6>
-                </div>
-                <form action="{% url 'article:articles' %}" method="get">
-                    <div class="premium-search d-flex align-items-center">
-                        <input type="text" name="keyword" placeholder="Oyun, İnceleme, Haber ara...">
-                        <button class="search-btn" type="submit"><i class="fas fa-arrow-right"></i></button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Leaderboard Widget -->
-            <div class="modern-widget">
-                <div class="widget-header">
-                    <h6 class="widget-title"><div class="icon-box text-warning"><i class="fas fa-trophy"></i></div> Sıralama</h6>
-                </div>
-                <div class="leaderboard-list">
-                    {% for top_user in top_users %}
-                    <a href="{% url 'user:profile' top_user.username %}" class="text-decoration-none d-block leaderboard-item">
-                        <div class="rank-number">{{ forloop.counter }}</div>
-                        <img src="{{ top_user.profile.image.url|default:'/static/img/default-user.png' }}" class="rounded-circle border ms-2" style="width:40px; height:40px; object-fit:cover;">
-                        <div class="ms-3 flex-grow-1">
-                            <div class="fw-bold text-dark mb-1" style="font-size: 0.9rem;">{{ top_user.username }}</div>
-                            <span class="badge bg-light text-dark border py-1 px-2" style="font-size:0.65rem;">
-                                <i class="fas {{ top_user.profile.rank_info.icon }} me-1 text-muted"></i> {{ top_user.profile.rank_info.title|upper }}
-                            </span>
+        <!-- ================= SAĞ KOLON (col-lg-2) ================= -->
+        <div class="col-lg-2 d-none d-lg-block">
+            <div class="sticky-sidebar">
+                
+                <!-- Arama -->
+                <div class="widget-box p-2 mb-3">
+                    <form action="{% url 'article:articles' %}" method="get">
+                        <div class="input-group input-group-sm">
+                            <input type="text" name="keyword" class="form-control bg-light border-0" placeholder="Ara...">
+                            <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i></button>
                         </div>
-                        <div class="text-end">
-                            <div class="fw-900 text-primary">{{ top_user.profile.total_xp }}</div>
-                            <div class="text-muted" style="font-size:0.6rem; letter-spacing: 1px;">XP</div>
-                        </div>
-                    </a>
-                    {% endfor %}
+                    </form>
                 </div>
-            </div>
 
-            <!-- Most Commented Widget (NEW FUNCTIONAL TABLE) -->
-            <div class="modern-widget">
-                <div class="widget-header">
-                    <h6 class="widget-title"><div class="icon-box text-danger"><i class="fas fa-fire"></i></div> Gündemdekiler</h6>
-                </div>
-                {% for top in most_commented_articles|slice:":4" %}
-                <div class="d-flex align-items-start gap-3 mb-4 last-mb-0 pb-3 border-bottom border-light">
-                    <div class="overflow-hidden flex-grow-1">
-                        <a href="{% url 'article:detail' top.slug %}" class="text-dark text-decoration-none fw-bold small d-block mb-2 transition">
-                            {{ top.title }}
+                <!-- Yazarlar Tablosu -->
+                <div class="widget-box">
+                    <h6 class="widget-title"><i class="fas fa-crown text-warning"></i> En İyi Yazarlar</h6>
+                    <div class="d-flex flex-column">
+                        {% for top_user in top_users|slice:":5" %}
+                        <a href="{% url 'user:profile' top_user.username %}" class="table-item hover-primary transition">
+                            <div class="rank-num">
+                                {% if forloop.counter == 1 %}
+                                    <i class="fas fa-crown text-warning" style="font-size: 1rem;"></i>
+                                {% elif forloop.counter == 2 %}
+                                    <i class="fas fa-medal text-secondary" style="font-size: 0.9rem;"></i>
+                                {% elif forloop.counter == 3 %}
+                                    <i class="fas fa-medal" style="font-size: 0.9rem; color: #cd7f32;"></i>
+                                {% else %}
+                                    {{ forloop.counter }}
+                                {% endif %}
+                            </div>
+                            <img src="{{ top_user.profile.image.url|default:'/static/img/default-user.png' }}" class="rounded-circle" style="width:28px; height:28px; object-fit:cover;">
+                            <div class="flex-grow-1 overflow-hidden">
+                                <div class="fw-bold text-dark text-truncate" style="font-size:0.8rem;">{{ top_user.username }}</div>
+                                <div class="fw-bold" style="font-size:0.65rem; color: {{ top_user.profile.rank_info.color }};">
+                                    <i class="fas {{ top_user.profile.rank_info.icon }} me-1"></i>{{ top_user.profile.rank_info.title }}
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill" style="font-size:0.65rem;">
+                                    {{ top_user.profile.total_xp }} XP
+                                </span>
+                            </div>
                         </a>
-                        <div class="d-flex align-items-center gap-3">
-                            <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill" style="font-size:0.65rem;">{{ top.category.name|default:"Haber" }}</span>
-                            <small class="text-muted fw-600" style="font-size:0.75rem;"><i class="fas fa-comment text-primary me-1"></i> {{ top.comments.count }} Yorum</small>
-                        </div>
+                        {% endfor %}
                     </div>
                 </div>
-                {% endfor %}
-            </div>
 
+                <!-- En Çok Beğenilenler -->
+                <div class="widget-box">
+                    <h6 class="widget-title"><i class="fas fa-heart text-danger"></i> En Çok Beğenilenler</h6>
+                    <div class="d-flex flex-column">
+                        {% for top in top_liked_articles|slice:":5" %}
+                        <a href="{% url 'article:detail' top.slug %}" class="table-item hover-primary transition">
+                            <div class="flex-grow-1 overflow-hidden">
+                                <div class="fw-bold text-dark mb-1 text-truncate" style="font-size:0.75rem;">{{ top.title }}</div>
+                                <div class="text-muted" style="font-size:0.65rem;">{{ top.author.username }}</div>
+                            </div>
+                            <div class="badge bg-danger bg-opacity-10 text-danger rounded-pill" style="font-size:0.7rem;">
+                                <i class="fas fa-heart"></i> {{ top.likes.count }}
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+
+            </div>
         </div>
+
     </div>
 </div>
+
+<div class="container"> <!-- HACK -->
+{% csrf_token %}
 {% endblock body %}
 
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Beğeni Butonu
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.like-action-btn');
+        if (btn) {
+            const articleId = btn.getAttribute('data-article-id');
+            const icon = btn.querySelector('i');
+            const countSpan = btn.querySelector('.like-count');
+            const token = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+
+            fetch(`/articles/like/${articleId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': token,
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.liked) {
+                    icon.classList.replace('far', 'fas');
+                } else {
+                    icon.classList.replace('fas', 'far');
+                }
+                countSpan.innerText = data.count;
+            });
+        }
+    });
+
+    // Load More
     const loadMoreBtn = document.getElementById('load-more-btn');
     const container = document.getElementById('article-container');
-    const countDisplay = document.getElementById('article-count');
 
     if (loadMoreBtn) {
         loadMoreBtn.addEventListener('click', function() {
             const nextPage = this.getAttribute('data-next-page');
             const originalText = this.innerHTML;
-            this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Yükleniyor...';
+            this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>...';
             this.disabled = true;
 
             fetch(`/?page=${nextPage}`, {
@@ -534,25 +442,50 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 data.articles.forEach(article => {
+                    const rawContent = article.content || '';
+                    let cleanContent = rawContent.replace(/<[^>]*>?/gm, '').trim();
+                    const doc = new DOMParser().parseFromString(cleanContent, 'text/html');
+                    cleanContent = doc.body.textContent || "";
+                    
+                    const words = cleanContent.split(/\s+/);
+                    const snippet = words.slice(0, 20).join(' ') + (words.length > 20 ? '...' : '');
+
+                    // JS tarafında da kategoriye göre renk atayalım
+                    let badgeColor = 'gray';
+                    const catLower = article.category.toLowerCase();
+                    if (catLower.includes('ürün') || catLower.includes('urun')) badgeColor = '1';
+                    else if (catLower.includes('tweak') || catLower.includes('performans')) badgeColor = '2';
+                    else if (catLower.includes('oyun')) badgeColor = '3';
+                    else if (catLower.includes('film') || catLower.includes('dizi')) badgeColor = '5';
+                    else if (catLower.includes('akış') || catLower.includes('stream')) badgeColor = '4';
+
                     const html = `
-                        <div class="col-md-6 article-item" style="opacity:0; transform:translateY(20px); transition: all 0.5s ease;">
+                        <div class="col article-item" style="opacity:0; transform:translateY(20px); transition: all 0.5s ease;">
                             <div class="article-card">
-                                <div class="article-card-img-wrapper">
-                                    ${article.image_url ? 
-                                        `<img src="${article.image_url}" class="article-card-img">` : 
-                                        `<div class="bg-dark d-flex align-items-center justify-content-center h-100"><i class="fas fa-image fa-2x text-white-50"></i></div>`
-                                    }
-                                    <div class="article-badge">${article.category}</div>
+                                <div class="article-img-wrapper">
+                                    ${article.image_url ? `<img src="${article.image_url}" class="article-img">` : `<div class="bg-dark d-flex align-items-center justify-content-center h-100"><i class="fas fa-image fa-2x text-white-50"></i></div>`}
+                                    <div class="article-badge badge-color-${badgeColor}">${article.category}</div>
                                 </div>
-                                <div class="article-card-body">
+                                <div class="article-body">
                                     <h4 class="article-title">
-                                        <a href="/articles/article/${article.slug}/" class="text-decoration-none text-dark">${article.title}</a>
+                                        <a href="/articles/article/${article.slug}/" class="text-decoration-none text-dark hover-primary transition">${article.title}</a>
                                     </h4>
-                                    <p class="text-muted small mb-4 flex-grow-1">${article.content}...</p>
-                                    <div class="mt-auto d-flex align-items-center justify-content-between pt-3 border-top border-light">
+                                    <div class="article-summary">
+                                        ${snippet}
+                                    </div>
+                                    <div class="article-footer">
                                         <div class="d-flex align-items-center gap-2">
-                                            <img src="${article.author_image}" class="rounded-circle shadow-sm" style="width:32px; height:32px; object-fit:cover;">
-                                            <span class="small fw-700 text-dark">${article.author}</span>
+                                            <img src="${article.author_image || '/static/img/default-user.png'}" class="rounded-circle" style="width:28px; height:28px; object-fit:cover;">
+                                            <div>
+                                                <div class="fw-700 text-dark" style="font-size:0.8rem;">${article.author}</div>
+                                                <div class="text-muted" style="font-size:0.65rem;">${article.date || ''} önce</div>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex gap-2 text-muted fw-600">
+                                            <span class="like-action-btn" data-article-id="${article.id}">
+                                                <i class="far fa-heart text-danger"></i> 
+                                                <span class="like-count">${article.likes_count || 0}</span>
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
@@ -571,20 +504,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     }, 50);
                 });
 
-                countDisplay.innerText = document.querySelectorAll('.article-item').length;
-
                 if (data.has_next) {
                     loadMoreBtn.setAttribute('data-next-page', data.next_page_number);
                     loadMoreBtn.innerHTML = originalText;
                     loadMoreBtn.disabled = false;
                 } else {
-                    loadMoreBtn.parentElement.innerHTML = '<div class="text-muted small fw-bold"><i class="fas fa-check-circle me-1 text-success"></i> Tüm içerikler yüklendi.</div>';
+                    loadMoreBtn.parentElement.innerHTML = '<div class="text-muted small fw-bold">Tüm içerikler yüklendi.</div>';
                 }
-            })
-            .catch(error => {
-                console.error('Error loading more articles:', error);
-                loadMoreBtn.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i> Hata Oluştu';
-                loadMoreBtn.disabled = false;
             });
         });
     }

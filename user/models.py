@@ -40,14 +40,20 @@ class Profile(models.Model):
     @property
     def rank_info(self):
         xp = self.total_xp
-        if xp < 100:
+        if xp < 50:
+            return {"title": "Yeni Üye", "color": "#94a3b8", "icon": "fa-user", "class": "yeni"}
+        elif xp < 150:
             return {"title": "Çaylak Yazar", "color": "#6c757d", "icon": "fa-pen-nib", "class": "caylak"}
         elif xp < 300:
-            return {"title": "Yetkin Kalem", "color": "#17a2b8", "icon": "fa-book-open", "class": "yetkin"}
-        elif xp < 700:
-            return {"title": "Usta Yazar", "color": "#007bff", "icon": "fa-keyboard", "class": "usta"}
+            return {"title": "Aktif Yazar", "color": "#0ea5e9", "icon": "fa-pen", "class": "aktif"}
+        elif xp < 500:
+            return {"title": "Yetkin Kalem", "color": "#10b981", "icon": "fa-book-open", "class": "yetkin"}
+        elif xp < 800:
+            return {"title": "Usta Yazar", "color": "#3b82f6", "icon": "fa-keyboard", "class": "usta"}
+        elif xp < 1200:
+            return {"title": "Üstat", "color": "#8b5cf6", "icon": "fa-feather", "class": "ustat"}
         else:
-            return {"title": "Baş Editör", "color": "#ffc107", "icon": "fa-award", "class": "editor"}
+            return {"title": "Baş Editör", "color": "#f59e0b", "icon": "fa-award", "class": "editor"}
 
     @receiver(post_save, sender=User)
     def create_profile(sender, instance, created, **kwargs):

@@ -8,3 +8,7 @@ staticfiles/
 media/
 data.json
 repomix-output.xml
+backups/
+scratch/
+*_backup.html
+templates/*_backup*.html

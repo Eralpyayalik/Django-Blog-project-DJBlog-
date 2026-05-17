@@ -3,167 +3,461 @@
 {% load article_extras %}
 {% load tz %}
 
+{% block head %}
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --bg-body: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --radius: 16px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body { 
+            background-color: var(--bg-body); 
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        /* Hero / Detail card */
+        .detail-card {
+            background: var(--card-bg);
+            border-radius: 24px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+        }
+
+        /* Category Badges matching branding rules */
+        .category-badge-detail {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            padding: 8px 16px;
+            border-radius: 30px;
+            display: inline-block;
+        }
+        
+        .badge-detail-default { background-color: #e2e8f0; color: #475569; }
+        .badge-color-blue { background-color: rgba(59, 130, 246, 0.1) !important; color: #3b82f6 !important; }
+        .badge-color-red { background-color: rgba(239, 68, 68, 0.1) !important; color: #ef4444 !important; }
+        .badge-color-green { background-color: rgba(16, 185, 129, 0.1) !important; color: #10b981 !important; }
+        .badge-color-purple { background-color: rgba(139, 92, 246, 0.1) !important; color: #8b5cf6 !important; }
+        .badge-color-orange { background-color: rgba(249, 115, 22, 0.1) !important; color: #f97316 !important; }
+
+        /* Typography & Content styling */
+        .article-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            line-height: 1.25;
+            color: #0f172a;
+            margin-top: 12px;
+            margin-bottom: 20px;
+        }
+
+        .article-content {
+            line-height: 1.8;
+            font-size: 1.15rem;
+            color: #334155;
+        }
+
+        .article-content p {
+            margin-bottom: 1.5rem;
+        }
+
+        .article-content h2, .article-content h3 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            color: #0f172a;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .article-content blockquote {
+            border-left: 4px solid var(--primary);
+            background-color: #f1f5f9;
+            padding: 16px 24px;
+            margin: 2rem 0;
+            border-radius: 0 12px 12px 0;
+            font-style: italic;
+            color: #475569;
+        }
+
+        .article-content img {
+            border-radius: 16px;
+            margin: 2rem 0;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        /* Sidebar - Highly polished Creator card */
+        .author-card-premium {
+            background: var(--card-bg);
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0, 0, 0.02);
+            position: relative;
+        }
+
+        .author-cover-glow {
+            height: 80px;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        }
+
+        .author-avatar-premium {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #ffffff;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            margin-top: -45px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Action Buttons */
+        .btn-action-premium {
+            border-radius: 12px;
+            padding: 10px 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+
+        .btn-action-premium:hover {
+            transform: translateY(-1px);
+        }
+
+        /* Custom comments thread line indicator */
+        #comment-list {
+            position: relative;
+        }
+
+        /* Styling comment item overrides - Pure borderless feed stream */
+        #comment-list .card {
+            border: none !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            border-bottom: 1px solid rgba(226, 232, 240, 0.7) !important;
+            border-radius: 0 !important;
+            margin-bottom: 16px !important;
+            padding-bottom: 8px !important;
+            transition: var(--transition);
+        }
+        
+        #comment-list .card:hover {
+            transform: none !important;
+            background: rgba(59, 130, 246, 0.01) !important;
+        }
+
+        #comment-list .card-body {
+            padding: 16px 8px !important;
+        }
+
+        /* Modernized Minimalist Actions - No Blocky Buttons */
+        #comment-list .btn-light,
+        #comment-list .comment-like-btn,
+        #comment-list .reply-btn,
+        #comment-list .delete-comment-btn,
+        #comment-list a.btn-light {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 6px 12px !important;
+            font-size: 0.85rem !important;
+            font-weight: 500 !important;
+            color: #64748b !important;
+            transition: var(--transition) !important;
+            border-radius: 20px !important;
+            display: inline-flex !important;
+            align-items: center;
+            gap: 6px;
+        }
+
+        #comment-list .comment-like-btn:hover {
+            background: rgba(239, 68, 68, 0.08) !important;
+            color: #ef4444 !important;
+        }
+        #comment-list .comment-like-btn:hover i {
+            transform: scale(1.15);
+        }
+        #comment-list .comment-like-btn i.fas.text-danger {
+            color: #ef4444 !important;
+        }
+
+        #comment-list .reply-btn:hover {
+            background: rgba(59, 130, 246, 0.08) !important;
+            color: #3b82f6 !important;
+        }
+        #comment-list .reply-btn:hover i {
+            transform: translateY(-1px) rotate(-10deg);
+        }
+
+        #comment-list .delete-comment-btn:hover {
+            background: rgba(239, 68, 68, 0.08) !important;
+            color: #ef4444 !important;
+        }
+
+        #comment-list a.btn-light:hover {
+            background: rgba(59, 130, 246, 0.08) !important;
+            color: #3b82f6 !important;
+        }
+
+        .comment-card-wrapper {
+            margin-bottom: 8px;
+        }
+
+        .replies-container {
+            border-left: 2px dashed rgba(59, 130, 246, 0.15);
+            padding-left: 24px;
+            margin-left: 28px;
+            margin-top: -8px;
+            margin-bottom: 12px;
+        }
+
+        @media(max-width: 576px) {
+            .replies-container {
+                margin-left: 14px;
+                padding-left: 14px;
+            }
+        }
+
+        /* Modern floating comment form input */
+        .comment-input-modern {
+            border-radius: 12px;
+            border: 1.5px solid #e2e8f0;
+            padding: 12px 16px;
+            transition: var(--transition);
+            background-color: #f8fafc;
+        }
+        .comment-input-modern:focus {
+            border-color: var(--primary);
+            background-color: #ffffff;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.08);
+        }
+
+    </style>
+{% endblock head %}
+
 {% block body %}
-<div class="container mt-5">
-    <div class="row">
-        <!-- Main Content -->
+<div class="container mt-5 mb-5">
+    <div class="row g-4">
+        
+        <!-- Main Content (Sol Bölüm) -->
         <div class="col-lg-8">
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-body">
+            
+            <!-- Makale Kartı -->
+            <div class="detail-card mb-4">
+                <div class="p-4 p-md-5">
+                    
+                    <!-- Kategori Vurgusu -->
                     {% if article.category %}
-                    <span class="badge bg-secondary mb-2">{{ article.category }}</span>
+                        {% if "ürün" in article.category.name|lower %}
+                            <span class="category-badge-detail badge-color-blue">{{ article.category }}</span>
+                        {% elif "tweak" in article.category.name|lower or "performans" in article.category.name|lower %}
+                            <span class="category-badge-detail badge-color-red">{{ article.category }}</span>
+                        {% elif "oyun" in article.category.name|lower %}
+                            <span class="category-badge-detail badge-color-green">{{ article.category }}</span>
+                        {% elif "film" in article.category.name|lower or "dizi" in article.category.name|lower %}
+                            <span class="category-badge-detail badge-color-purple">{{ article.category }}</span>
+                        {% elif "akış" in article.category.name|lower or "stream" in article.category.name|lower %}
+                            <span class="category-badge-detail badge-color-orange">{{ article.category }}</span>
+                        {% else %}
+                            <span class="category-badge-detail badge-detail-default">{{ article.category }}</span>
+                        {% endif %}
                     {% endif %}
                     
-                    <h1 class="fw-bold">{{ article.title }}</h1>
+                    <!-- Başlık -->
+                    <h1 class="article-title">{{ article.title }}</h1>
                     
-                    <div class="text-muted small mb-4 d-flex align-items-center flex-wrap gap-3">
-                        <span><i class="far fa-calendar-alt"></i> {{ article.created_date|timezone:"Europe/Istanbul"|date:"d M Y" }}</span>
-                        <span><i class="far fa-clock"></i> {{ article.content|read_time }} dk okuma</span>
-                        <span><i class="fas fa-eye"></i> {{ article.read_count }} okunma</span>
-                        <span><i class="fas fa-heart text-danger"></i> <span id="like-count">{{ article.likes.count }}</span> beğeni</span>
-                        <span><i class="fas fa-comments"></i> {{ article.comments.count }} yorum</span>
+                    <!-- Meta Bilgiler -->
+                    <div class="text-muted small mb-4 d-flex align-items-center flex-wrap gap-3 pb-3 border-bottom border-light" style="font-size: 0.85rem;">
+                        <span><i class="far fa-calendar-alt me-1 text-primary"></i> {{ article.created_date|timezone:"Europe/Istanbul"|date:"d M Y" }}</span>
+                        <span><i class="far fa-clock me-1 text-primary"></i> {{ article.content|read_time }} dk okuma</span>
+                        <span><i class="fas fa-eye me-1 text-primary"></i> {{ article.read_count }} okunma</span>
+                        <span><i class="fas fa-heart me-1 text-danger"></i> <span id="like-count" class="fw-bold">{{ article.likes.count }}</span> beğeni</span>
+                        <span><i class="fas fa-comments me-1 text-primary"></i> {{ article.comments.count }} yorum</span>
                     </div>
 
+                    <!-- Görsel -->
                     {% if article.article_image %}
-                    <img src="{{ article.article_image.url }}" class="img-fluid rounded mb-4 w-100" alt="{{ article.title }}" loading="lazy">
+                        <div class="overflow-hidden rounded-4 mb-4">
+                            <img src="{{ article.article_image.url }}" class="img-fluid w-100 hover-zoom" alt="{{ article.title }}" loading="lazy" style="border-radius: 16px; object-fit: cover; max-height: 480px;">
+                        </div>
                     {% endif %}
 
-                    <div class="article-content" style="line-height: 1.8; font-size: 1.1rem; font-family: 'Inter', sans-serif;">
+                    <!-- İçerik -->
+                    <div class="article-content">
                         {{ article.content|safe }}
                     </div>
 
-                    <hr class="my-4">
-
-                    <div class="d-flex justify-content-between align-items-center">
+                    <div class="my-4 border-top border-light pt-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
                         <div>
                             {% if request.user.is_authenticated %}
-                            <button id="like-btn" data-url="{% url 'article:like_article' article.id %}" type="button" class="btn {% if request.user in article.likes.all %}btn-danger{% else %}btn-outline-danger{% endif %} rounded-pill">
-                                <i id="like-icon" class="{% if request.user in article.likes.all %}fas{% else %}far{% endif %} fa-heart me-1"></i>
-                                <span id="like-text">{% if request.user in article.likes.all %}Beğenildi{% else %}Beğen{% endif %}</span>
-                            </button>
+                                <button id="like-btn" data-url="{% url 'article:like_article' article.id %}" type="button" class="btn btn-action-premium {% if request.user in article.likes.all %}btn-danger shadow-sm{% else %}btn-outline-danger{% endif %} rounded-pill px-4">
+                                    <i id="like-icon" class="{% if request.user in article.likes.all %}fas{% else %}far{% endif %} fa-heart me-2"></i>
+                                    <span id="like-text">{% if request.user in article.likes.all %}Beğenildi{% else %}Beğen{% endif %}</span>
+                                </button>
                             {% else %}
-                            <a href="{% url 'user:login' %}" class="btn btn-outline-secondary rounded-pill">
-                                <i class="far fa-heart me-1"></i> Beğenmek için giriş yap
-                            </a>
+                                <a href="{% url 'user:login' %}" class="btn btn-action-premium btn-outline-secondary rounded-pill px-4">
+                                    <i class="far fa-heart me-2"></i> Beğenmek için giriş yap
+                                </a>
                             {% endif %}
                         </div>
-                        <a href="{% url 'article:dashboard' %}" class="btn btn-light rounded-pill">
-                            <i class="fas fa-arrow-left me-1"></i> Geri Dön
+                        <a href="/" class="btn btn-action-premium btn-light rounded-pill px-4">
+                            <i class="fas fa-arrow-left me-2"></i> Ana Sayfaya Dön
                         </a>
                     </div>
                 </div>
             </div>
 
-            <!-- Comment Form -->
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-body">
-                    <h4 class="fw-bold mb-3">Yorum Yap</h4>
-                    <form id="comment-form" method="post" action="{% url 'article:comment' article.id %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="parent_id" id="parent_id" value="">
+            <!-- Yorum Yap Formu -->
+            <div class="detail-card mb-4 p-4 p-md-5">
+                <h4 class="fw-800 mb-3" style="color: #0f172a;"><i class="fas fa-pen me-2 text-primary"></i>Düşüncelerini Paylaş</h4>
+                
+                <form id="comment-form" method="post" action="{% url 'article:comment' article.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="parent_id" id="parent_id" value="">
 
-                        <div id="replying-to" class="alert alert-info d-none mb-3 py-2">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span><i class="fas fa-reply me-1"></i> <strong id="reply-target"></strong> kullanıcısına yanıt veriyorsun.</span>
-                                <button type="button" class="btn-close" id="cancel-reply"></button>
-                            </div>
+                    <div id="replying-to" class="alert alert-info d-none mb-3 py-2 border-0 rounded-3" style="background-color: rgba(59, 130, 246, 0.1); color: var(--primary);">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="small fw-600"><i class="fas fa-reply me-1"></i> <strong id="reply-target"></strong> kullanıcısına yanıt veriyorsun.</span>
+                            <button type="button" class="btn-close small" id="cancel-reply" style="font-size: 0.75rem;"></button>
                         </div>
+                    </div>
 
-                        <div class="mb-3">
-                            <label for="comment_author" class="form-label">İsim</label>
-                            {% if request.user.is_authenticated %}
-                            <input name="comment_author" type="text" class="form-control" id="comment_author" value="{{ request.user.username }}" readonly>
-                            {% else %}
-                            <input name="comment_author" type="text" class="form-control" id="comment_author" placeholder="Adınız..." required>
-                            {% endif %}
-                        </div>
+                    <div class="mb-3">
+                        <label for="comment_author" class="form-label fw-700 text-dark" style="font-size: 0.85rem;">Adınız Soyadınız</label>
+                        {% if request.user.is_authenticated %}
+                            <input name="comment_author" type="text" class="form-control comment-input-modern fw-600" id="comment_author" value="{{ request.user.username }}" readonly>
+                        {% else %}
+                            <input name="comment_author" type="text" class="form-control comment-input-modern" id="comment_author" placeholder="İsminiz..." required>
+                        {% endif %}
+                    </div>
 
-                        <div class="mb-3">
-                            <label for="comment_content" class="form-label">Yorum</label>
-                            <textarea name="comment_content" class="form-control" id="comment_content" rows="4" placeholder="Düşünceleriniz..." required></textarea>
-                        </div>
+                    <div class="mb-3">
+                        <label for="comment_content" class="form-label fw-700 text-dark" style="font-size: 0.85rem;">Yorumunuz</label>
+                        <textarea name="comment_content" class="form-control comment-input-modern" id="comment_content" rows="4" placeholder="Makale hakkında ne düşünüyorsun?.." required></textarea>
+                    </div>
 
-                        <button type="submit" class="btn btn-primary rounded-pill px-4">Gönder</button>
-                    </form>
-                </div>
+                    <button type="submit" class="btn btn-action-premium btn-primary rounded-pill px-4 py-2 mt-2 shadow-sm">
+                        <i class="fas fa-paper-plane me-2"></i>Gönder
+                    </button>
+                </form>
             </div>
 
-            <!-- Comments List -->
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-body">
-                    <h4 class="fw-bold mb-4">Yorumlar ({{ article.comments.count }})</h4>
-                    
-                    {% if comments %}
-                    <div id="comment-list">
+            <!-- Yorumlar Listesi -->
+            <div class="detail-card p-4 p-md-5">
+                <h4 class="fw-800 mb-4" style="color: #0f172a;"><i class="fas fa-comments me-2 text-primary"></i>Yorumlar ({{ article.comments.count }})</h4>
+                
+                {% if comments %}
+                    <div id="comment-list" class="d-flex flex-column gap-3">
                         {% for comment in comments %}
-                        {% include "includes/comment_item.html" with comment=comment %}
+                            {% include "includes/comment_item.html" with comment=comment %}
                         {% endfor %}
                     </div>
-                    {% else %}
-                    <div class="text-center text-muted py-4">
-                        <i class="far fa-comment-dots fa-3x mb-3 opacity-50"></i>
-                        <p>Henüz yorum yapılmamış. İlk yorumu siz yapın!</p>
+                {% else %}
+                    <div class="text-center text-muted py-5 opacity-75">
+                        <div class="mb-3">
+                            <i class="far fa-comment-dots fa-3x text-primary" style="opacity: 0.5;"></i>
+                        </div>
+                        <h5 class="fw-800 text-dark">Henüz Yorum Yapılmamış</h5>
+                        <p class="small mb-0">İlk yorumu yapıp sohbeti başlatmaya ne dersin?</p>
                     </div>
-                    {% endif %}
-                </div>
+                {% endif %}
             </div>
         </div>
 
-        <!-- Sidebar -->
+        <!-- Sidebar (Sağ Bölüm) -->
         <div class="col-lg-4">
-            <div class="card border-0 shadow-sm text-center mb-4">
-                <div class="card-body">
-                    {% if article.author.profile.image %}
-                    <img src="{{ article.author.profile.image.url }}" class="rounded-circle mb-3 border" style="width: 100px; height: 100px; object-fit: cover;" loading="lazy">
-                    {% else %}
-                    <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto mb-3 border text-secondary" style="width: 100px; height: 100px;">
-                        <i class="fas fa-user fa-3x"></i>
-                    </div>
-                    {% endif %}
-
-                    <h5 class="fw-bold mb-1">{{ article.author.username }}</h5>
+            
+            <!-- Creator Profile Card -->
+            <div class="author-card-premium mb-4">
+                <div class="author-cover-glow"></div>
+                <div class="p-4 text-center">
                     
-                    {% if article.author.profile.rank_info %}
-                    {% if article.author.profile.rank_info.color %}
-                    <div class="mb-3">
-                        <span class="badge" data-bg="{{ article.author.profile.rank_info.color }}">
-                            <i class="fas {{ article.author.profile.rank_info.icon }} me-1"></i>
-                            {{ article.author.profile.rank_info.title|upper }}
-                        </span>
-                    </div>
+                    <!-- Avatar -->
+                    {% if article.author.profile.image %}
+                        <img src="{{ article.author.profile.image.url }}" class="author-avatar-premium">
                     {% else %}
-                    <div class="mb-3">
-                        <span class="badge bg-secondary">
-                            <i class="fas {{ article.author.profile.rank_info.icon }} me-1"></i>
-                            {{ article.author.profile.rank_info.title|upper }}
-                        </span>
-                    </div>
-                    {% endif %}
+                        <div class="author-avatar-premium bg-light d-flex align-items-center justify-content-center mx-auto text-secondary shadow-sm" style="font-size: 2rem;">
+                            <i class="fas fa-user"></i>
+                        </div>
                     {% endif %}
 
-                    <p class="text-muted small mb-4">{{ article.author.profile.bio|default:"Yazar hakkında bilgi bulunmuyor."|truncatechars:100 }}</p>
+                    <!-- Username -->
+                    <h5 class="fw-800 mb-1 mt-2 text-dark">{{ article.author.username }}</h5>
+                    
+                    <!-- Rank Badge -->
+                    {% if article.author.profile.rank_info %}
+                        {% if article.author.profile.rank_info.color %}
+                            <div class="mb-3">
+                                <span class="badge px-3 py-2 fw-700" style="background-color: {{ article.author.profile.rank_info.color }}; color: white; font-size: 0.7rem; border-radius: 6px;">
+                                    <i class="fas {{ article.author.profile.rank_info.icon }} me-1"></i>
+                                    {{ article.author.profile.rank_info.title|upper }}
+                                </span>
+                            </div>
+                        {% else %}
+                            <div class="mb-3">
+                                <span class="badge bg-secondary px-3 py-2 fw-700" style="font-size: 0.7rem; border-radius: 6px;">
+                                    <i class="fas {{ article.author.profile.rank_info.icon }} me-1"></i>
+                                    {{ article.author.profile.rank_info.title|upper }}
+                                </span>
+                            </div>
+                        {% endif %}
+                    {% endif %}
 
-                    <div class="d-grid gap-2">
-                        <a href="{% url 'user:profile' username=article.author.username %}" class="btn btn-outline-primary rounded-pill">
-                            <i class="fas fa-user me-1"></i> Profili Görüntüle
+                    <!-- Bio -->
+                    <p class="text-muted small mb-4" style="line-height: 1.6;">{{ article.author.profile.bio|default:"Yazar hakkında henüz bilgi eklenmemiş." }}</p>
+
+                    <!-- Profile Actions -->
+                    <div class="d-flex flex-column gap-2 mt-3">
+                        <a href="{% url 'user:profile' username=article.author.username %}" class="btn btn-action-premium btn-outline-primary w-100 rounded-pill">
+                            <i class="fas fa-user me-2"></i>Profili Görüntüle
                         </a>
                         {% if request.user.is_authenticated and article.author != request.user %}
-                        <a href="{% url 'user:messages_page' %}?user_id={{ article.author.id }}" class="btn btn-primary rounded-pill">
-                            <i class="fas fa-envelope me-1"></i> Mesaj Gönder
-                        </a>
+                            <a href="{% url 'user:messages_page' %}?user_id={{ article.author.id }}" class="btn btn-action-premium btn-primary w-100 rounded-pill shadow-sm">
+                                <i class="fas fa-envelope me-2"></i>Mesaj Gönder
+                            </a>
                         {% endif %}
                     </div>
                 </div>
             </div>
 
+            <!-- Kategori Kartı -->
             {% if article.category %}
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
-                    <h6 class="fw-bold mb-3">Kategori</h6>
-                    <span class="badge bg-light text-dark border px-3 py-2 rounded-pill">{{ article.category }}</span>
+                <div class="detail-card p-4">
+                    <h6 class="fw-800 mb-3 text-dark"><i class="fas fa-folder me-2 text-primary"></i>Kategori</h6>
+                    
+                    {% if "ürün" in article.category.name|lower %}
+                        <span class="category-badge-detail badge-color-blue d-inline-block">{{ article.category }}</span>
+                    {% elif "tweak" in article.category.name|lower or "performans" in article.category.name|lower %}
+                        <span class="category-badge-detail badge-color-red d-inline-block">{{ article.category }}</span>
+                    {% elif "oyun" in article.category.name|lower %}
+                        <span class="category-badge-detail badge-color-green d-inline-block">{{ article.category }}</span>
+                    {% elif "film" in article.category.name|lower or "dizi" in article.category.name|lower %}
+                        <span class="category-badge-detail badge-color-purple d-inline-block">{{ article.category }}</span>
+                    {% elif "akış" in article.category.name|lower or "stream" in article.category.name|lower %}
+                        <span class="category-badge-detail badge-color-orange d-inline-block">{{ article.category }}</span>
+                    {% else %}
+                        <span class="category-badge-detail badge-detail-default d-inline-block">{{ article.category }}</span>
+                    {% endif %}
                 </div>
-            </div>
             {% endif %}
+
         </div>
     </div>
 </div>
@@ -176,10 +470,11 @@
     }
 
     document.addEventListener('DOMContentLoaded', function () {
-        // Apply dynamic background colors from data attributes
+        // Apply dynamic background colors from data attributes (for backwards compatibility if needed)
         document.querySelectorAll('[data-bg]').forEach(function(el) {
             el.style.backgroundColor = el.getAttribute('data-bg');
         });
+
         const replyBtns = document.querySelectorAll('.reply-btn');
         const parentIdInput = document.getElementById('parent_id');
         const replyingToDiv = document.getElementById('replying-to');
@@ -272,6 +567,9 @@
                             commentList.insertAdjacentHTML('afterbegin', data.comment_html);
                             commentForm.reset();
                             submitBtn.disabled = false;
+                            
+                            // Yorum sayısını güncelle
+                            window.location.reload();
                         }
                     }
                 })
@@ -306,6 +604,8 @@
                         commentCard.style.transform = 'translateX(20px)';
                         setTimeout(() => {
                             commentCard.remove();
+                            // Yorum sayısını güncelle
+                            window.location.reload();
                         }, 400);
                     } else {
                         alert(data.message || 'Bir hata oluştu.');

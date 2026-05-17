@@ -1,67 +1,239 @@
 {% extends "layout.html" %}
 {% load static %}
 
+{% block head %}
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --bg-body: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --radius: 16px;
+            --transition: all 0.3s ease;
+        }
+
+        body { 
+            background-color: var(--bg-body); 
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .notif-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+        }
+
+        .notif-header {
+            background: #ffffff;
+            border-bottom: 1px solid var(--border-color);
+            padding: 24px;
+        }
+
+        .notif-item {
+            padding: 20px 24px;
+            border-bottom: 1px solid #f1f5f9;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            position: relative;
+        }
+
+        .notif-item:last-child {
+            border-bottom: none;
+        }
+
+        .notif-item:hover {
+            background-color: #f8fafc;
+        }
+
+        .notif-item.unread {
+            background-color: rgba(59, 130, 246, 0.03);
+        }
+
+        .notif-item.unread::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background-color: var(--primary);
+        }
+
+        .notif-icon-wrapper {
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .notif-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .notif-badge {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.65rem;
+            border: 2px solid white;
+        }
+
+        .notif-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--primary);
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .empty-state {
+            padding: 60px 20px;
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .empty-icon {
+            width: 80px;
+            height: 80px;
+            background: #f1f5f9;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: #94a3b8;
+            margin-bottom: 20px;
+        }
+
+    </style>
+{% endblock head %}
+
 {% block body %}
-<div class="container mt-5">
+<div class="container mt-5 mb-5">
     <div class="row justify-content-center">
         <div class="col-lg-8">
-            <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
-                <div class="card-header bg-dark text-white p-4 d-flex justify-content-between align-items-center border-0">
-                    <h4 class="mb-0 fw-bold"><i class="fas fa-bell me-2 text-warning"></i>Bildirimler</h4>
-                    <span class="badge bg-danger rounded-pill px-3">{{ unread_count }} Okunmamış</span>
+            
+            <!-- Bildirim Kartı -->
+            <div class="notif-card">
+                
+                <!-- Header -->
+                <div class="notif-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="fw-800 mb-0" style="color: #0f172a;">Bildirim Merkezi</h4>
+                        <p class="text-muted small mb-0 mt-1">Sizinle ilgili son aktiviteler ve etkileşimler.</p>
+                    </div>
+                    {% if unread_count > 0 %}
+                        <span class="badge rounded-pill px-3 py-2 fw-700" style="background-color: rgba(59, 130, 246, 0.1); color: var(--primary); font-size: 0.8rem;">
+                            {{ unread_count }} Okunmamış
+                        </span>
+                    {% endif %}
                 </div>
-                <div class="list-group list-group-flush">
+
+                <!-- Liste -->
+                <div class="d-flex flex-column">
                     {% for notif in notifs %}
-                    <div class="list-group-item p-4 {% if not notif.is_read %}bg-light border-start border-primary border-4{% endif %} transition-all hover-bg">
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="flex-shrink-0">
-                                {% if notif.sender.profile.image %}
-                                    <img src="{{ notif.sender.profile.image.url }}" class="rounded-circle shadow-sm" style="width: 50px; height: 50px; object-fit: cover;">
+                    <div class="notif-item {% if not notif.is_read %}unread{% endif %}">
+                        
+                        <!-- Sol Taraf: Avatar ve İkon Rozeti -->
+                        <div class="notif-icon-wrapper">
+                            {% if notif.sender.profile.image %}
+                                <img src="{{ notif.sender.profile.image.url }}" class="notif-avatar">
+                            {% else %}
+                                <img src="{% static 'img/default-user.png' %}" class="notif-avatar">
+                            {% endif %}
+                            
+                            <!-- Bildirim Tipine Göre İkon -->
+                            {% if notif.notification_type == 'like' %}
+                                <div class="notif-badge bg-danger">
+                                    <i class="fas fa-heart"></i>
+                                </div>
+                            {% elif notif.notification_type == 'message' %}
+                                <div class="notif-badge bg-primary">
+                                    <i class="fas fa-envelope"></i>
+                                </div>
+                            {% elif notif.notification_type == 'reply' %}
+                                {% if "beğendi" in notif.text %}
+                                    <div class="notif-badge bg-danger">
+                                        <i class="fas fa-heart"></i>
+                                    </div>
                                 {% else %}
-                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 50px; height: 50px;">
-                                        <i class="fas fa-user"></i>
+                                    <div class="notif-badge bg-success">
+                                        <i class="fas fa-comment"></i>
                                     </div>
                                 {% endif %}
-                            </div>
-                            <div class="flex-grow-1">
-                                <div class="d-flex justify-content-between align-items-start mb-1">
-                                    <h6 class="mb-0 fw-bold">
-                                        {% if notif.sender %}{{ notif.sender.username }}{% else %}Sistem{% endif %}
-                                    </h6>
-                                    <small class="text-muted">{{ notif.created_at|timesince }} önce</small>
-                                </div>
-                                <p class="mb-0 text-secondary">{{ notif.text }}</p>
-                                {% if notif.notification_type == 'message' %}
-                                    <a href="{% url 'user:messages_page' %}?user_id={{ notif.sender.id }}" class="btn btn-sm btn-outline-primary mt-2 rounded-pill px-3">
-                                        <i class="fas fa-reply me-1"></i> Yanıtla
-                                    </a>
-                                {% endif %}
-                            </div>
-                            {% if not notif.is_read %}
-                                <div class="ms-2">
-                                    <div class="bg-primary rounded-circle" style="width: 10px; height: 10px;"></div>
+                            {% else %}
+                                <div class="notif-badge bg-secondary">
+                                    <i class="fas fa-bell"></i>
                                 </div>
                             {% endif %}
                         </div>
+
+                        <!-- Orta Taraf: İçerik -->
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-start mb-1">
+                                <h6 class="mb-0 fw-700 text-dark" style="font-size: 0.95rem;">
+                                    {% if notif.sender %}{{ notif.sender.username }}{% else %}Sistem{% endif %}
+                                </h6>
+                                <span class="text-muted" style="font-size: 0.75rem;">{{ notif.created_at|timesince }} önce</span>
+                            </div>
+                            <p class="mb-0 text-secondary" style="font-size: 0.85rem;">{{ notif.text }}</p>
+                            
+                            <!-- Aksiyon Butonları -->
+                            <div class="mt-2">
+                                {% if notif.notification_type == 'message' %}
+                                    <a href="{% url 'user:messages_page' %}?user_id={{ notif.sender.id }}" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-700" style="font-size: 0.75rem;">
+                                        <i class="fas fa-reply me-1"></i> Yanıtla
+                                    </a>
+                                {% elif notif.target_url %}
+                                    <a href="{{ notif.target_url }}" class="btn btn-sm btn-light rounded-pill px-3 fw-700 text-primary" style="font-size: 0.75rem;">
+                                        <i class="fas fa-external-link-alt me-1"></i> Görüntüle
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Sağ Taraf: Okunmadı Noktası -->
+                        {% if not notif.is_read %}
+                            <div class="notif-dot"></div>
+                        {% endif %}
                     </div>
                     {% empty %}
-                    <div class="text-center py-5 opacity-50">
-                        <i class="fas fa-bell-slash fa-3x mb-3"></i>
-                        <h5>Henüz bildiriminiz yok.</h5>
+                    <!-- Boş Durum -->
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <i class="fas fa-bell-slash"></i>
+                        </div>
+                        <h5 class="fw-800 text-dark mb-1">Henüz Bildirim Yok</h5>
+                        <p class="text-muted small mb-0">Herhangi bir etkileşim aldığınızda burada görünecektir.</p>
                     </div>
                     {% endfor %}
                 </div>
             </div>
+
         </div>
     </div>
 </div>
-
-<style>
-    .hover-bg:hover {
-        background-color: #f8f9fa !important;
-    }
-    .transition-all {
-        transition: all 0.3s ease;
-    }
-</style>
 {% endblock body %}

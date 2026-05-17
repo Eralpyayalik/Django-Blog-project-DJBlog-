@@ -86,7 +86,7 @@ def index(request):
                     'id': article.id,
                     'title': article.title,
                     'slug': article.slug,
-                    'content': article.content[:100], # Basic strip done in JS/template or here
+                    'content': article.content[:500], # Send more characters so JS can truncate properly
                     'image_url': article.article_image.url if article.article_image else None,
                     'author': article.author.username,
                     'author_image': article.author.profile.image.url if article.author.profile.image else '/static/img/default-user.png',
@@ -227,16 +227,20 @@ def addComment(request, id):
                 target_url=reverse('article:detail', kwargs={'slug': article.slug}) + f"#comment-{newComment.id}"
             )
             # WebSoket üzerinden anlık gönder
-            channel_layer = get_channel_layer()
-            async_to_sync(channel_layer.group_send)(
-                f'user_{article.author.id}',
-                {
-                    'type': 'new_notification',
-                    'sender_id': request.user.id if request.user.is_authenticated else None,
-                    'notification_type': 'reply',
-                    'text': notification.text
-                }
-            )
+            try:
+                channel_layer = get_channel_layer()
+                if channel_layer:
+                    async_to_sync(channel_layer.group_send)(
+                        f'user_{article.author.id}',
+                        {
+                            'type': 'new_notification',
+                            'sender_id': request.user.id if request.user.is_authenticated else None,
+                            'notification_type': 'reply',
+                            'text': notification.text
+                        }
+                    )
+            except Exception as e:
+                print(f"WebSocket Error: {e}")
 
         # YANIT BİLDİRİMİ OLUŞTUR
         if parent_id and parent_obj.user and parent_obj.user != request.user:
@@ -248,16 +252,21 @@ def addComment(request, id):
                 target_url=reverse('article:detail', kwargs={'slug': article.slug}) + f"#comment-{newComment.id}"
             )
             # WebSoket üzerinden anlık gönder
-            channel_layer = get_channel_layer()
-            async_to_sync(channel_layer.group_send)(
-                f'user_{parent_obj.user.id}',
-                {
-                    'type': 'new_notification',
-                    'sender_id': request.user.id if request.user.is_authenticated else None,
-                    'notification_type': 'reply',
-                    'text': notification.text
-                }
-            )
+            try:
+                channel_layer = get_channel_layer()
+                if channel_layer:
+                    async_to_sync(channel_layer.group_send)(
+                        f'user_{parent_obj.user.id}',
+                        {
+                            'type': 'new_notification',
+                            'sender_id': request.user.id if request.user.is_authenticated else None,
+                            'notification_type': 'reply',
+                            'text': notification.text
+                        }
+                    )
+            except Exception as e:
+                print(f"WebSocket Error: {e}")
+
 
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             # Yeni yorumu tam şablonuyla render et
@@ -303,16 +312,20 @@ def like_article(request, id):
                 target_url=reverse('article:detail', kwargs={'slug': article.slug})
             )
             # WebSoket üzerinden anlık gönder
-            channel_layer = get_channel_layer()
-            async_to_sync(channel_layer.group_send)(
-                f'user_{article.author.id}',
-                {
-                    'type': 'new_notification',
-                    'sender_id': request.user.id,
-                    'notification_type': 'like',
-                    'text': notification.text
-                }
-            )
+            try:
+                channel_layer = get_channel_layer()
+                if channel_layer:
+                    async_to_sync(channel_layer.group_send)(
+                        f'user_{article.author.id}',
+                        {
+                            'type': 'new_notification',
+                            'sender_id': request.user.id,
+                            'notification_type': 'like',
+                            'text': notification.text
+                        }
+                    )
+            except Exception as e:
+                print(f"WebSocket Error: {e}")
     
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         return JsonResponse({'liked': liked, 'count': article.likes.count()})
@@ -340,16 +353,20 @@ def likeComment(request, id):
                 target_url=reverse('article:detail', kwargs={'slug': comment.article.slug}) + f"#comment-{comment.id}"
             )
             # WebSoket üzerinden anlık gönder
-            channel_layer = get_channel_layer()
-            async_to_sync(channel_layer.group_send)(
-                f'user_{comment.user.id}',
-                {
-                    'type': 'new_notification',
-                    'sender_id': request.user.id,
-                    'notification_type': 'reply',
-                    'text': notification.text
-                }
-            )
+            try:
+                channel_layer = get_channel_layer()
+                if channel_layer:
+                    async_to_sync(channel_layer.group_send)(
+                        f'user_{comment.user.id}',
+                        {
+                            'type': 'new_notification',
+                            'sender_id': request.user.id,
+                            'notification_type': 'reply',
+                            'text': notification.text
+                        }
+                    )
+            except Exception as e:
+                print(f"WebSocket Error: {e}")
     
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         return JsonResponse({'liked': liked, 'count': comment.likes.count()})
